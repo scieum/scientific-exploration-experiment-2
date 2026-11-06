@@ -1,0 +1,479 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>감염병 진단 실험실</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans+KR:wght@400;500;700&display=swap">
+<style>
+/* 실험대 위 아크릴 홈판을 중심에 둔 단일 열 작업 화면. 색은 반응 결과에만 강하게 쓴다. */
+:root{
+  --bg:#e7eeee;--panel:#f7fafa;--ink:#132b2e;--muted:#4c6468;--line:#bccccd;
+  --accent:#0b5f6b;--accent-ink:#ffffff;--plate:#d3e0e1;--well:#f4f8f8;--liq:#c9dde3;
+  --react:#c2185b;--react-pale:#f0a6c3;--on-react:#ffffff;--react-text:#c2185b;--good:#1c6b3f;--bad:#a8341c;
+  --sans:"IBM Plex Sans KR","Malgun Gothic","Apple SD Gothic Neo",sans-serif;
+  --mono:"IBM Plex Mono",Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f1a1c;--panel:#17272a;--ink:#e4eeee;--muted:#a3b8ba;--line:#34494c;
+  --accent:#5fc2cf;--accent-ink:#08272c;--plate:#22393d;--well:#101f22;--liq:#35525a;
+  --react:#e8357d;--react-pale:#8f4a68;--on-react:#2a0614;--react-text:#f47aa9;--good:#71d29a;--bad:#f39a83;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1a1c;--panel:#17272a;--ink:#e4eeee;--muted:#a3b8ba;--line:#34494c;
+  --accent:#5fc2cf;--accent-ink:#08272c;--plate:#22393d;--well:#101f22;--liq:#35525a;
+  --react:#e8357d;--react-pale:#8f4a68;--on-react:#2a0614;--react-text:#f47aa9;--good:#71d29a;--bad:#f39a83;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.65 var(--sans);word-break:keep-all;overflow-wrap:anywhere}
+.top,main{max-width:920px;margin:0 auto;padding-inline:max(16px,env(safe-area-inset-left,0px)) max(16px,env(safe-area-inset-right,0px))}
+.top{padding-block:20px 8px;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline;justify-content:space-between}
+.top b{font-size:1.15rem}
+main{padding-block:8px 48px;display:grid;gap:20px}
+h1{font-size:1.65rem;line-height:1.3;margin:0;text-wrap:balance}
+h2{font-size:1.1rem;margin:0}
+p{margin:0;max-width:65ch}
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:4px 12px;font-size:.82rem;color:var(--muted)}
+.steps li[aria-current]{color:var(--ink);font-weight:700}
+.steps li.past{color:var(--accent)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:20px;display:grid;gap:14px;min-width:0}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.cols{display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.cols>*{min-width:0}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 14px;min-height:44px}
+button:hover{border-color:var(--accent)}
+button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+button.go{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
+button.small{min-height:32px;padding:4px 10px;font-size:.82rem}
+button:disabled{opacity:.5;cursor:not-allowed}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+label{display:grid;gap:4px;font-weight:500}
+input,textarea,select{background:var(--well);border:1px solid var(--line);border-radius:8px;padding:10px;width:100%}
+textarea{min-height:110px;resize:vertical;font-weight:400}
+.msg{color:var(--bad);font-weight:500}
+.note{color:var(--muted);font-size:.9rem}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+th,td{border:1px solid var(--line);padding:6px 8px;text-align:center;vertical-align:middle}
+td.l,th.l{text-align:left}
+th{background:var(--plate);font-weight:500}
+td,.num{font-variant-numeric:tabular-nums}
+/* 시약 순서 띠 */
+.flow{display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center;font-size:.88rem}
+.flow span{padding:3px 9px;border:1px solid var(--line);border-radius:6px}
+.flow i{font-style:normal;color:var(--muted);font-size:.8rem}
+.clock{font-family:var(--mono);font-size:1.15rem}
+/* 홈판 */
+.plate{background:var(--plate);border-radius:18px;padding:18px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;max-width:520px;width:100%;margin-inline:auto;box-shadow:inset 0 0 0 2px var(--line)}
+.well{position:relative;aspect-ratio:1;max-width:100%;padding:0;min-height:0;border-radius:50%;background:var(--well);border:2px solid var(--line);overflow:hidden;display:block;width:100%}
+.well .liq{position:absolute;inset:calc(50% - var(--r)/2);border-radius:50%;background:var(--liq);transition:inset .25s}
+.well.lv1 .liq{background:var(--react-pale);animation:bloom 1.4s ease-out}
+.well.lv2 .liq{background:var(--react);animation:bloom 1.4s ease-out}
+.well .wn{position:absolute;inset:0;display:grid;place-items:center;font:500 1rem var(--mono)}
+.well.lv2 .wn{color:var(--on-react)}
+.well.sel{outline:3px solid var(--accent);outline-offset:2px}
+.well.dripped::after{content:"";position:absolute;left:calc(50% - 5px);top:-14px;width:10px;height:14px;border-radius:50% 50% 50% 50%/30% 30% 70% 70%;background:var(--accent);animation:drip .35s ease-in forwards}
+@keyframes drip{to{transform:translateY(46px);opacity:0}}
+@keyframes bloom{from{background:var(--liq)}}
+.plabels{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;max-width:520px;width:100%;margin-inline:auto;font-size:.8rem;text-align:center;color:var(--muted);padding-inline:18px}
+.rack{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(130px,1fr))}
+.chip{min-height:38px;padding:5px 10px;font-size:.9rem}
+.swatch{display:inline-block;width:12px;height:12px;border-radius:50%;border:1px solid var(--line);vertical-align:-1px;margin-right:4px}
+svg{display:block;width:100%;height:auto;max-width:100%}
+svg text{fill:var(--muted);font:12px var(--sans)}
+.ax{stroke:var(--line);fill:none}
+.ln{stroke:var(--accent);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.lim{stroke:var(--muted);stroke-width:1.5;stroke-dasharray:5 4}
+.dot{fill:var(--accent);stroke:var(--panel);stroke-width:2}
+.mol-cap{stroke:var(--accent);stroke-width:5;fill:none;stroke-linecap:round}
+.mol-det{stroke:var(--muted);stroke-width:5;fill:none;stroke-linecap:round}
+.mol-ag{fill:var(--good)}
+.mol-enz{fill:#d99a1c}
+.mol-pro{fill:var(--react)}
+.surface{fill:var(--plate)}
+.card-done{display:block;padding:6px 10px;border:1px solid var(--line);border-radius:6px}
+.teacher{display:none}
+.res{font-weight:700}
+.res.pos{color:var(--react-text)}
+.res.neg{color:var(--good)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media print{
+  body{background:#fff;color:#000;font-size:11pt}
+  .top,.noprint{display:none!important}
+  .panel{border:0;padding:0}
+  .teacher{display:block;break-inside:avoid}
+  th{background:#eee}
+  main{padding:0;max-width:none}
+}
+</style>
+</head>
+<body>
+<div class="top">
+  <b>감염병 진단 실험실</b>
+  <button class="small noprint" data-act="restart" id="restart">처음부터</button>
+  <ol class="steps" id="steps"></ol>
+</div>
+<main id="app"></main>
+
+<script id="logic">
+// 선생님이 바꿀 수 있는 내용: 생각해 보기 질문 3개
+const QUESTIONS=[
+  '홈 1(음성 표준 시료)과 홈 2(양성 표준 시료)를 사람의 시료와 함께 실험해야 하는 까닭을 쓰시오. 대조군이 예상과 다른 색을 보이면 사람의 결과를 어떻게 다루어야 하는지도 쓰시오.',
+  '항원과 항체의 결합을 이용하여, 시료에 병원체가 있을 때만 색이 변하는 까닭을 포획 항체, 항원, 검출 시약, 진단 반응물의 순서로 설명하시오.',
+  '단백질을 이용한 진단 기술과 핵산을 이용한 진단 기술의 장단점을 비교하고, 감염 초기가 의심되는 환자에게 알맞은 기술을 근거와 함께 고르시오. 또 이 기술들이 사회 문제 해결에 어떻게 유용한지 쓰시오.',
+];
+const SAMPLES=['neg','pos','p1','p2']; // 홈 1~4에 넣어야 하는 시료
+const NAMES={cap:'포획 항체',neg:'음성 표준 시료',pos:'양성 표준 시료',p1:'사람 1의 시료',p2:'사람 2의 시료',det:'검출 시약',sub:'진단 반응물'};
+const COLORS=['무색','연한 붉은색','붉은색'];
+
+function hash(s){let h=2166136261;for(const c of String(s)){h^=c.codePointAt(0);h=Math.imul(h,16777619)}return h>>>0}
+// 같은 학번은 늘 같은 환자 결과를 받는다
+function caseFor(id){const h=hash(String(id).trim());return{p1:!!(h&1),p2:!!(h&2),p3:!!(h&4)}}
+function truthOf(c){return{neg:false,pos:true,p1:c.p1,p2:c.p2}}
+
+// adds: [{r:시약, t:몇 번째 5분 구간}]. 앞 단계 물질이 이미 붙은 뒤에 넣어야 결합한다.
+function evalWell(adds,truth){
+  const first=(rs,after)=>{const ts=adds.filter(a=>rs.includes(a.r)&&a.t>after).map(a=>a.t);return ts.length?Math.min(...ts):null};
+  const n=rs=>adds.filter(a=>rs.includes(a.r)).length;
+  const ag=SAMPLES.filter(s=>truth[s]);
+  const tCap=first(['cap'],-1);
+  const tAg=tCap===null?null:first(ag,tCap);
+  const tDet=tAg===null?null:first(['det'],tAg);
+  const tSub=tDet===null?null:first(['sub'],tDet);
+  const bound={cap:tCap!==null,ag:tAg!==null,det:tDet!==null,sub:tSub!==null};
+  if(!bound.sub)return{level:0,bound};
+  return{level:Math.min(n(['cap']),n(ag),n(['det']),n(['sub']))<2?1:2,bound};
+}
+// 한 번의 실험에서 나온 절차 오류의 종류
+function auditRun(wells){
+  const e=new Set();
+  wells.forEach((adds,i)=>{
+    const want=SAMPLES[i],need=['cap',want,'det','sub'];
+    const n=r=>adds.filter(a=>a.r===r).length;
+    const t=r=>{const ts=adds.filter(a=>a.r===r).map(a=>a.t);return ts.length?Math.min(...ts):null};
+    for(const r of need){
+      const label=r===want?'진단 시료':NAMES[r];
+      if(!n(r))e.add(label+'를 빠뜨림');else if(n(r)!==2)e.add(label+' 방울 수가 2방울이 아님');
+    }
+    if(SAMPLES.some(s=>s!==want&&n(s)))e.add('다른 홈의 시료를 넣음');
+    const ts=need.map(t).filter(x=>x!==null);
+    if(ts.some((x,k)=>k&&ts[k-1]>=x))e.add('시약 순서나 5분 대기를 지키지 않음');
+  });
+  return[...e];
+}
+// 채점 기준 표의 칸을 그대로 옮긴 참고 점수. 최종 점수는 교사가 정한다.
+function scoreProcess(safety,errors){if(!safety&&!errors)return 30;return errors>=3?10:20}
+function scoreRecord(rec,actual){return rec.filter((r,i)=>r===actual[i]).length*5}
+function scoreConclusion(judge,basis,levels){
+  const people=[['p1',levels[2]],['p2',levels[3]]];
+  if(!people.every(([p,l])=>judge[p]===(l>0?'감염':'비감염')))return 10;
+  return people.every(([p,l])=>basis[p]===(l>0?'pos':'neg'))?20:15;
+}
+</script>
+
+<script>
+const KEY='dx-sim-v1';
+const STAGES=['시작','안전 준비','단백질 진단','결과 기록','감염 판정','핵산 진단','기술 비교','생각해 보기','결과지'];
+const PPE={coat:'실험복',glove:'실험용 장갑',goggle:'보안경'};
+const RULES=[
+  ['시료와 시약마다 다른 스포이트를 쓴다.',true],
+  ['스포이트 하나를 헹구지 않고 모든 시료에 함께 쓴다.',false],
+  ['시약이 피부에 묻으면 흐르는 물로 씻고 선생님께 알린다.',true],
+  ['시약의 냄새를 코를 가까이 대고 직접 맡아 본다.',false],
+  ['사용한 약품은 선생님의 안내에 따라 정해진 곳에 버린다.',true],
+  ['실험이 끝나면 손을 씻는다.',true],
+];
+const PCR_STEPS=[
+  '검사 대상자(사람 3과 4)로부터 시료를 채취한다.',
+  '시료에서 핵산을 추출한다.',
+  '추출한 핵산을 중합효소연쇄반응 재료와 함께 장치에 넣는다.',
+  '병원체의 핵산만 여러 차례 증폭(복제)시켜 본다.',
+  '병원체의 핵산의 양이 늘어나는지 확인한다.',
+];
+const PCR_SHOW=[3,1,4,0,2];
+const DAY_AMOUNT=[.5,2,3.5,5,6.5,7,6.5,5.5],LIM_PROTEIN=4.5,LIM_NA=1.5; // 수업용 모형값
+
+const fresh=restarts=>({stage:0,id:'',name:'',ppe:{},rules:{},safety:[],run:1,wells:[[],[],[],[]],block:0,clock:0,spoite:null,
+  drip:null,done:false,levels:[],bounds:[],runErrors:[],record:[null,null,null,null],disposal:null,inspect:null,
+  judge:{},basis:{},why:{p1:'',p2:''},pcrDone:[],pcrWrong:0,pcrPick:null,cycles:0,pcrJudge:{},day:1,answers:['','',''],
+  msg:'',confirm:false,restarts,finished:''});
+let S=fresh(0);
+try{const saved=JSON.parse(localStorage.getItem(KEY));if(saved)S=Object.assign(fresh(0),saved)}catch{}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch{}};
+
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const app=document.getElementById('app');
+const go=n=>{S.stage=n;S.msg='';render();scrollTo(0,0)};
+const truth=()=>truthOf(caseFor(S.id));
+const btn=(act,arg,label,cls='',extra='')=>`<button class="${cls}" data-act="${act}" data-arg="${esc(arg)}" ${extra}>${label}</button>`;
+const toggle=(act,arg,label,on,cls='')=>btn(act,arg,label,cls,`aria-pressed="${!!on}"`);
+const msg=()=>S.msg?`<p class="msg" role="alert">${esc(S.msg)}</p>`:'';
+
+function plate(mode){
+  const r=i=>S.done?'78%':Math.min(30+S.wells[i].length*7,78)+'%';
+  return `<div class="plate" role="group" aria-label="홈판">${S.wells.map((w,i)=>{
+    const cls=['well',S.done?'lv'+S.levels[i]:'',S.drip===i?'dripped':'',mode==='inspect'&&S.inspect===i?'sel':''].join(' ');
+    const label=`홈 ${i+1}, ${S.done?COLORS[S.levels[i]]:w.length+'방울'}`;
+    return `<button class="${cls}" data-act="${mode==='inspect'?'inspect':'drop'}" data-arg="${i}" aria-label="${label}" ${mode==='view'?'disabled':''}><span class="liq" style="--r:${r(i)}"></span><span class="wn">${i+1}</span></button>`;
+  }).join('')}</div>
+  <div class="plabels"><span>음성 표준</span><span>양성 표준</span><span>사람 1</span><span>사람 2</span></div>`;
+}
+const flow=`<div class="flow"><span>① 포획 항체</span><i>5분 뒤</i><span>② 진단 시료</span><i>5분 뒤</i><span>③ 검출 시약</span><i>5분 뒤</i><span>④ 진단 반응물</span></div>`;
+
+function dropTable(){
+  const rows=S.wells.map((w,i)=>{
+    const c=rs=>w.filter(a=>rs.includes(a.r)).length;
+    return `<tr><td>${i+1}</td><td class="l">${NAMES[SAMPLES[i]]}</td><td>${c(['cap'])}</td><td>${c(SAMPLES)}</td><td>${c(['det'])}</td><td>${c(['sub'])}</td></tr>`;
+  }).join('');
+  return `<div class="tw"><table><caption class="note">넣은 방울 수 (홈마다 각 2방울)</caption><tr><th>홈</th><th class="l">넣을 시료</th><th>포획 항체</th><th>진단 시료</th><th>검출 시약</th><th>진단 반응물</th></tr>${rows}</table></div>`;
+}
+
+function molecule(i){
+  const b=S.bounds[i];
+  const lv=S.levels[i];
+  const y=(x,cls,flip)=>flip
+    ?`<path class="${cls}" d="M${x} 44V62M${x} 62L${x-11} 78M${x} 62L${x+11} 78"/>`
+    :`<path class="${cls}" d="M${x} 150V128M${x} 128L${x-11} 112M${x} 128L${x+11} 112"/>`;
+  const site=x=>(b.cap?y(x,'mol-cap'):'')
+    +(b.ag?`<circle class="mol-ag" cx="${x}" cy="97" r="13"/>`:'')
+    +(b.det?y(x,'mol-det',true)+`<rect class="mol-enz" x="${x-9}" y="26" width="18" height="18" rx="3"/>`:'')
+    +(b.sub?[-24,-16,18,26].map((d,k)=>`<circle class="mol-pro" cx="${x+d}" cy="${18+k*9}" r="4"/>`).join(''):'');
+  const say=!b.cap?'포획 항체가 바닥에 없어서 항원을 붙잡을 곳이 없어요.'
+    :!b.ag?'붙잡힌 항원이 없어요. 검출 시약도 결합하지 못하고 씻겨 나가 색이 변하지 않아요.'
+    :!b.det?'항원은 붙잡혔지만 검출 시약이 결합하지 못해 효소가 없어요.'
+    :!b.sub?'효소는 붙어 있지만 진단 반응물이 효소와 만나지 못해 색이 변하지 않아요.'
+    :lv===2?'포획 항체–항원–검출 시약이 차례로 결합했고, 효소가 진단 반응물을 붉은색 물질로 바꾸었어요.'
+    :'결합은 일어났지만 넣은 양이 적어서 색이 연해요.';
+  return `<div class="panel"><h2>홈 ${i+1} 분자 수준으로 보기</h2>
+    <svg viewBox="0 0 320 160" role="img" aria-label="${esc(say)}"><rect class="surface" y="150" width="320" height="10"/>${site(90)}${site(230)}</svg>
+    <p class="note"><span class="swatch" style="background:var(--accent)"></span>포획 항체 <span class="swatch" style="background:var(--good)"></span>항원 <span class="swatch" style="background:var(--muted)"></span>검출 시약 항체 <span class="swatch" style="background:#d99a1c"></span>결합 효소 <span class="swatch" style="background:var(--react)"></span>색을 띠는 물질</p>
+    <p>${esc(say)}</p>
+    <p class="note">결합하지 않은 물질은 각 단계 사이에 씻겨 나간다고 가정했어요. 실제 효소결합면역흡착검사(ELISA)의 세척 과정이에요.</p></div>`;
+}
+
+function pcrChart(pos,n,name){
+  const X=c=>44+c*(232/30),Y=v=>140-v*120;
+  const pts=[...Array(n+1).keys()].map(c=>`${X(c).toFixed(1)},${Y(pos?2**(c-30):.01).toFixed(1)}`).join(' ');
+  const ticks=[0,10,20,30].map(c=>`<text x="${X(c)}" y="156" text-anchor="middle">${c}</text>`).join('');
+  return `<svg viewBox="0 0 290 176" role="img" aria-label="${name}의 증폭 횟수에 따른 핵산의 양, 현재 ${n}회"><text x="44" y="12">${name}: 핵산의 양</text><path class="ax" d="M44 20V140H276"/>${ticks}<text x="276" y="172" text-anchor="end">증폭 횟수</text>${n?`<polyline class="ln" points="${pts}"/>`:''}</svg>`;
+}
+function dayChart(day){
+  const X=d=>44+d*(230/7),Y=v=>140-v*15;
+  const pts=DAY_AMOUNT.map((v,d)=>`${X(d)},${Y(v)}`).join(' ');
+  const ticks=DAY_AMOUNT.map((_,d)=>`<text x="${X(d)}" y="156" text-anchor="middle">${d}</text>`).join('');
+  return `<svg viewBox="0 0 290 176" role="img" aria-label="감염 후 일수에 따른 병원체의 양과 두 검사의 검출 한계"><text x="44" y="12">병원체의 양 (수업용 모형값)</text><path class="ax" d="M44 20V140H276"/>
+  <line class="lim" x1="44" x2="276" y1="${Y(LIM_PROTEIN)}" y2="${Y(LIM_PROTEIN)}"/><text x="48" y="${Y(LIM_PROTEIN)-5}">단백질 검사 검출 한계</text>
+  <line class="lim" x1="44" x2="276" y1="${Y(LIM_NA)}" y2="${Y(LIM_NA)}"/><text x="272" y="${Y(LIM_NA)-5}" text-anchor="end">핵산 검사 검출 한계</text>
+  ${ticks}<text x="276" y="172" text-anchor="end">감염 후 일수</text><polyline class="ln" points="${pts}"/><circle class="dot" r="6" cx="${X(day)}" cy="${Y(DAY_AMOUNT[day])}"/></svg>`;
+}
+
+const views=[
+()=>`<div class="panel"><h1>두 사람은 감염되었을까요?</h1>
+  <p>진단 검사실에 발열과 기침 증상이 있는 사람 1, 2의 시료가 도착했어요. 항원–항체 반응으로 감염 여부를 판정하고, 핵산 증폭 검사와 비교해 두 기술의 차이를 찾아보세요.</p>
+  <p class="note">실제 시약과 병원체를 쓰지 않는 모의 실험이에요. 학번마다 환자의 결과가 달라요. 쓴 내용은 이 기기에 자동으로 저장되고 평가 자료로 쓰여요.</p>
+  <div class="cols"><label>학번 (모둠 활동이면 모둠 번호)<input id="f-id" data-bind="id" value="${esc(S.id)}" autocomplete="off"></label>
+  <label>이름<input id="f-name" data-bind="name" value="${esc(S.name)}" autocomplete="off"></label></div>
+  ${msg()}<div class="row">${btn('start','','실험 준비하기','go')}</div></div>`,
+
+()=>`<div class="panel"><h1>실험 전 안전 준비</h1><h2>착용할 보호구를 모두 고르세요</h2>
+  <div class="row">${Object.entries(PPE).map(([k,v])=>toggle('ppe',k,v,S.ppe[k])).join('')}</div>
+  <h2>지켜야 할 안전 수칙만 고르세요</h2>
+  <div class="row">${RULES.map(([t],i)=>toggle('rule',i,t,S.rules[i],'chip')).join('')}</div>
+  <div class="row">${btn('toLab','','실험 시작','go')}</div></div>`,
+
+()=>`<div class="panel"><h1>단백질을 이용한 진단</h1>${flow}
+  <p class="note">스포이트를 고른 뒤 홈을 누르면 한 번에 한 방울씩 들어가요. 넣은 시약은 되돌릴 수 없어요. 한 단계를 끝내면 5분을 기다리세요.</p>
+  <div class="rack" role="group" aria-label="스포이트">${Object.entries(NAMES).map(([k,v])=>toggle('spoite',k,v,S.spoite===k,'chip')).join('')}</div>
+  ${plate('drop')}
+  <div class="row"><span class="clock" aria-live="polite">경과 ${S.clock}분</span>${btn('wait','','5분 기다리기')}${btn('finish','','실험을 마치고 색 관찰하기','go')}</div>
+  ${msg()}${dropTable()}</div>`,
+
+()=>{const ctlOk=S.levels[0]===0&&S.levels[1]===2;return `<div class="panel"><h1>색 변화 기록</h1>
+  <p class="note">${S.run}번째 실험 결과예요. 홈을 누르면 분자 수준에서 일어난 일을 볼 수 있어요.</p>
+  ${plate('inspect')}
+  <div class="tw"><table><tr><th>홈</th><th class="l">시료</th><th>관찰한 색</th></tr>${SAMPLES.map((s,i)=>`<tr><td>${i+1}</td><td class="l">${NAMES[s]}</td><td><div class="row" style="justify-content:center">${COLORS.map((c,k)=>toggle('rec',`${i}:${k}`,c,S.record[i]===k,'chip')).join('')}</div></td></tr>`).join('')}</table></div>
+  <h2>사용한 약품 처리</h2>
+  ${S.disposal?`<p>${S.disposal==='waste'?'지정된 폐액 용기에 모았어요.':'정해진 곳이 아니에요. 안전 수칙 위반으로 기록되었어요.'}</p>`:`<div class="row">${btn('dispose','waste','지정된 폐액 용기에 모은다')}${btn('dispose','sink','개수대에 흘려보낸다')}${btn('dispose','bin','일반 쓰레기통에 버린다')}</div>`}
+  ${msg()}<div class="row">${btn('toJudge','','감염 판정하기','go')}${ctlOk?'':`${btn('retry','','새 홈판으로 다시 실험')}<span class="note">대조군이 예상과 달라 보이면 다시 실험할 수 있어요. 횟수와 오류는 기록돼요.</span>`}</div></div>
+  ${S.inspect!==null?molecule(S.inspect):''}`},
+
+()=>`<div class="panel"><h1>대조군과 비교해 판정하기</h1>${plate('view')}
+  ${[['p1','사람 1',3],['p2','사람 2',4]].map(([p,name,w])=>`<h2>${name} (홈 ${w})</h2>
+  <div class="row">${['감염','비감염'].map(v=>toggle('judge',`${p}:${v}`,v,S.judge[p]===v,'chip')).join('')}</div>
+  <div class="row">${[['pos','양성 대조군(홈 2)과 색이 같다'],['neg','음성 대조군(홈 1)과 색이 같다'],['none','대조군과 비교하지 않았다']].map(([k,v])=>toggle('basis',`${p}:${k}`,v,S.basis[p]===k,'chip')).join('')}</div>
+  <label>판정 근거<textarea id="why-${p}" data-bind="why.${p}">${esc(S.why[p])}</textarea></label>`).join('')}
+  ${msg()}<div class="row">${btn('toPcr','','핵산 진단으로','go')}</div></div>`,
+
+()=>{const c=caseFor(S.id),orderDone=S.pcrDone.length===5,cyc=orderDone;return `<div class="panel"><h1>핵산을 이용한 진단</h1>
+  <h2>검사 순서대로 카드를 누르세요</h2>
+  ${S.pcrDone.map((k,i)=>`<span class="card-done">${i+1}. ${PCR_STEPS[k]}</span>`).join('')}
+  ${orderDone?'':`<div class="row">${PCR_SHOW.filter(k=>!S.pcrDone.includes(k)).map(k=>btn('pcr',k,PCR_STEPS[k],'chip')).join('')}</div>`}
+  ${cyc?`<h2>사람 3과 4의 핵산을 증폭하세요</h2>
+  <label>증폭 횟수 <span class="num" id="cyc">${S.cycles}회</span>
+  <input id="f-cycles" type="range" min="0" max="30" value="${S.cycles}" data-range="cycles"></label>
+  <p>핵산 1개는 <b id="cyccopy" class="num">${(2**S.cycles).toLocaleString('ko-KR')}개</b>로 늘어나요.</p>
+  <div class="cols"><div id="chart3">${pcrChart(c.p3,S.cycles,'사람 3')}</div><div id="chart4">${pcrChart(!c.p3,S.cycles,'사람 4')}</div></div>
+  <div class="row" id="pcrj">${pcrJudge()}</div>`:''}
+  ${msg()}<div class="row">${btn('toCompare','','두 기술 비교하기','go')}</div></div>`},
+
+()=>`<div class="panel"><h1>감염 초기 환자를 두 기술로 검사하면?</h1>
+  <p>날짜를 옮기며 두 검사의 결과가 언제 달라지는지 찾아보세요.</p>
+  <label>감염 후 <span class="num" id="dayv">${S.day}일</span><input id="f-day" type="range" min="0" max="7" value="${S.day}" data-range="day"></label>
+  <div class="cols"><div id="chartd">${dayChart(S.day)}</div><div id="dayres">${dayResult()}</div></div>
+  <div class="tw"><table><tr><th class="l">구분</th><th>단백질 이용</th><th>핵산 이용</th></tr>
+  <tr><td class="l">찾는 대상</td><td>병원체의 항원</td><td>병원체의 핵산</td></tr>
+  <tr><td class="l">결과 확인까지</td><td>보통 수십 분 이내</td><td>보통 수 시간</td></tr>
+  <tr><td class="l">필요한 장비</td><td>홈판 또는 간이 키트</td><td>중합효소연쇄반응 장치</td></tr></table></div>
+  <div class="row">${btn('go','7','생각해 보기','go')}</div></div>`,
+
+()=>`<div class="panel"><h1>생각해 보기</h1>
+  ${QUESTIONS.map((q,i)=>`<label>${i+1}. ${esc(q)}<textarea id="ans-${i}" data-bind="answers.${i}">${esc(S.answers[i])}</textarea></label>`).join('')}
+  ${msg()}<div class="row">${btn('finishAll','','제출할 결과지 만들기','go')}</div>
+  <p class="note">결과지를 만들면 답을 고칠 수 없어요.</p></div>`,
+
+()=>report(),
+];
+
+function pcrJudge(){
+  if(S.cycles<30)return '<span class="note">30회까지 증폭한 뒤 판정할 수 있어요.</span>';
+  return [['p3','사람 3'],['p4','사람 4']].map(([p,n])=>`<b>${n}</b>${['감염','비감염'].map(v=>toggle('pcrJ',`${p}:${v}`,v,S.pcrJudge[p]===v,'chip')).join('')}`).join(' ');
+}
+function dayResult(){
+  const a=DAY_AMOUNT[S.day],r=(ok)=>`<span class="res ${ok?'pos':'neg'}">${ok?'양성':'음성'}</span>`;
+  return `<p>단백질 검사: ${r(a>LIM_PROTEIN)}</p><p>핵산 검사: ${r(a>LIM_NA)}</p>`;
+}
+
+function report(){
+  const errs=S.runErrors.flat();
+  const sp=scoreProcess(S.safety.length,errs.length),sr=scoreRecord(S.record,S.levels),sc=scoreConclusion(S.judge,S.basis,S.levels);
+  const ctlOk=S.levels[0]===0&&S.levels[1]===2;
+  const list=a=>a.length?`<ul>${a.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:'없음';
+  return `<div class="panel" id="report"><h1>감염병 진단 기술 체험 보고서</h1>
+  <p>${esc(S.id)} ${esc(S.name)} · ${esc(S.finished)}</p>
+  <p class="note">[10과탐2-02-01] 단백질과 핵산을 이용한 감염병 진단 기술 체험 실험 후 보고서 작성하기</p>
+  <h2>실험 수행 기록</h2>
+  <div class="tw"><table><tr><th class="l">실험 횟수</th><td class="l">${S.run}회${S.restarts?` (처음부터 다시 시작 ${S.restarts}회)`:''}</td></tr>
+  <tr><th class="l">안전 수칙</th><td class="l">${list(S.safety)}</td></tr>
+  <tr><th class="l">절차 오류 (전체 실험)</th><td class="l">${list(errs)}</td></tr>
+  <tr><th class="l">핵산 진단 순서 오답</th><td class="l">${S.pcrWrong}회</td></tr></table></div>
+  <h2>결과 및 정리</h2>
+  <div class="tw"><table><tr><th>홈</th><th class="l">시료</th><th>학생 기록</th><th>실제 결과</th></tr>
+  ${SAMPLES.map((s,i)=>`<tr><td>${i+1}</td><td class="l">${NAMES[s]}</td><td>${COLORS[S.record[i]]??'기록 없음'}</td><td>${COLORS[S.levels[i]]}</td></tr>`).join('')}</table></div>
+  <h2>결론</h2>
+  ${[['p1','사람 1'],['p2','사람 2']].map(([p,n])=>`<p><b>${n}: ${esc(S.judge[p])}</b> (${{pos:'양성 대조군과 같음',neg:'음성 대조군과 같음',none:'대조군과 비교하지 않음'}[S.basis[p]]})<br>${esc(S.why[p])}</p>`).join('')}
+  <p>핵산 진단 판정: 사람 3 ${esc(S.pcrJudge.p3)}, 사람 4 ${esc(S.pcrJudge.p4)}</p>
+  <h2>생각해 보기</h2>
+  ${QUESTIONS.map((q,i)=>`<p><b>${i+1}. ${esc(q)}</b><br>${esc(S.answers[i])||'(답 없음)'}</p>`).join('')}
+  <div class="teacher" id="teacher"><h2>교사 확인란</h2><p class="note">자동 값은 참고용이에요.${ctlOk?'':' 대조군 결과가 정상이 아니므로 결론을 직접 확인하세요.'} 핵산 판정 정답: 사람 3 ${caseFor(S.id).p3?'감염':'비감염'}.</p>
+  <table><tr><th class="l">평가 요소</th><th>배점</th><th>자동 참고</th><th>최종</th></tr>
+  <tr><td class="l">실험 태도 및 탐구 수행</td><td>30</td><td>${sp}</td><td></td></tr>
+  <tr><td class="l">결과 및 정리</td><td>20</td><td>${sr}</td><td></td></tr>
+  <tr><td class="l">결론 도출</td><td>20</td><td>${sc}</td><td></td></tr>
+  <tr><td class="l">일반화</td><td>30</td><td>교사 채점</td><td></td></tr></table></div></div>
+  <div class="row noprint">${window.self===window.top?btn('print','','인쇄 또는 PDF 저장','go'):''}${btn('copy','','결과 복사하기')}<span class="note" id="copied" role="status"></span></div>`;
+}
+
+const parts=s=>s.split(':');
+const A={
+  go:n=>go(+n),
+  start(){if(!S.id.trim()||!S.name.trim()){S.msg='학번과 이름을 입력하세요.';return render()}go(1)},
+  ppe(k){S.ppe[k]=!S.ppe[k];render()},
+  rule(i){S.rules[i]=!S.rules[i];render()},
+  toLab(){
+    S.safety=[];
+    for(const k in PPE)if(!S.ppe[k])S.safety.push(PPE[k]+' 미착용');
+    RULES.forEach(([t,ok],i)=>{if(!!S.rules[i]!==ok)S.safety.push('안전 수칙 판단 오류: '+t)});
+    go(2);
+  },
+  spoite(k){S.spoite=k;S.msg='';render()},
+  drop(i){
+    if(!S.spoite){S.msg='먼저 스포이트를 고르세요.';return render()}
+    S.wells[+i].push({r:S.spoite,t:S.block});S.drip=+i;S.msg='';render();S.drip=null;
+  },
+  wait(){S.block++;S.clock+=5;render()},
+  finish(){
+    const t=truth(),res=S.wells.map(w=>evalWell(w,t));
+    S.levels=res.map(r=>r.level);S.bounds=res.map(r=>r.bound);
+    S.runErrors.push(auditRun(S.wells));S.done=true;go(3);
+  },
+  inspect(i){S.inspect=+i;render()},
+  rec(a){const[i,k]=parts(a);S.record[+i]=+k;render()},
+  dispose(k){S.disposal=k;if(k!=='waste')S.safety.push('사용한 약품을 정해진 곳에 버리지 않음');render()},
+  retry(){Object.assign(S,{run:S.run+1,wells:[[],[],[],[]],block:0,clock:0,spoite:null,done:false,record:[null,null,null,null],disposal:null,inspect:null});go(2)},
+  toJudge(){
+    if(S.record.includes(null)||!S.disposal){S.msg='네 홈의 색을 모두 기록하고 약품을 처리하세요.';return render()}
+    go(4);
+  },
+  judge(a){const[p,v]=parts(a);S.judge[p]=v;render()},
+  basis(a){const[p,v]=parts(a);S.basis[p]=v;render()},
+  toPcr(){
+    if(!S.judge.p1||!S.judge.p2||!S.basis.p1||!S.basis.p2){S.msg='두 사람의 판정과 비교 결과를 고르세요.';return render()}
+    go(5);
+  },
+  pcr(k){
+    if(+k===S.pcrDone.length){S.pcrDone.push(+k);S.msg=''}
+    else{S.pcrWrong++;S.msg='그 단계는 아직 할 수 없어요. 앞 단계를 먼저 생각해 보세요.'}
+    render();
+  },
+  pcrJ(a){const[p,v]=parts(a);S.pcrJudge[p]=v;render()},
+  toCompare(){
+    if(!S.pcrJudge.p3||!S.pcrJudge.p4){S.msg='검사 순서를 맞추고 30회 증폭한 뒤 사람 3과 4를 판정하세요.';return render()}
+    go(6);
+  },
+  finishAll(){S.finished=new Date().toLocaleString('ko-KR');go(8)},
+  print(){window.print()},
+  copy(){
+    const text=document.getElementById('report').innerText+'\n\n'+document.getElementById('teacher').textContent;
+    const say=m=>document.getElementById('copied').textContent=m;
+    navigator.clipboard.writeText(text).then(()=>say('복사했어요.'),()=>say('복사하지 못했어요. 결과지를 직접 선택해 복사하세요.'));
+  },
+  restart(){
+    if(!S.confirm){S.confirm=true;return render()}
+    S=fresh(S.restarts+1);render();
+  },
+  cancel(){S.confirm=false;render()},
+};
+
+function render(){
+  document.getElementById('steps').innerHTML=STAGES.map((s,i)=>`<li class="${i<S.stage?'past':''}" ${i===S.stage?'aria-current="step"':''}>${s}</li>`).join('');
+  const r=document.getElementById('restart');
+  r.textContent=S.confirm?'입력한 내용을 지우고 처음부터 시작':'처음부터';
+  app.innerHTML=(S.confirm?`<div class="row noprint">${btn('cancel','','계속 진행하기')}<span class="note">처음부터 시작하면 쓴 내용이 지워지고, 다시 시작한 횟수가 결과지에 남아요.</span></div>`:'')+views[S.stage]();
+  save();
+}
+
+let lastAct=null;
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-act]');
+  if(!b)return;
+  lastAct=[b.dataset.act,b.dataset.arg];
+  A[b.dataset.act](b.dataset.arg);
+  // 화면을 다시 그려도 키보드 위치를 잃지 않게 한다
+  const again=[...document.querySelectorAll('[data-act]')].find(x=>x.dataset.act===lastAct[0]&&x.dataset.arg===lastAct[1]);
+  if(again&&document.activeElement===document.body)again.focus({preventScroll:true});
+});
+document.addEventListener('input',e=>{
+  const t=e.target;
+  if(t.dataset.bind){
+    const path=t.dataset.bind.split('.'),k=path.pop();
+    path.reduce((o,p)=>o[p],S)[k]=t.value;save();
+  }
+  if(t.dataset.range==='cycles'){
+    const c=caseFor(S.id);S.cycles=+t.value;
+    document.getElementById('cyc').textContent=S.cycles+'회';
+    document.getElementById('cyccopy').textContent=(2**S.cycles).toLocaleString('ko-KR')+'개';
+    document.getElementById('chart3').innerHTML=pcrChart(c.p3,S.cycles,'사람 3');
+    document.getElementById('chart4').innerHTML=pcrChart(!c.p3,S.cycles,'사람 4');
+    document.getElementById('pcrj').innerHTML=pcrJudge();save();
+  }
+  if(t.dataset.range==='day'){
+    S.day=+t.value;
+    document.getElementById('dayv').textContent=S.day+'일';
+    document.getElementById('chartd').innerHTML=dayChart(S.day);
+    document.getElementById('dayres').innerHTML=dayResult();save();
+  }
+});
+render();
+</script>
+</body>
+</html>
