@@ -4,8 +4,8 @@ import assert from 'node:assert/strict';
 
 const html=readFileSync(new URL('./index.html',import.meta.url),'utf8');
 const code=html.match(/<script id="logic">([\s\S]*?)<\/script>/)[1];
-const {evalWell,auditRun,scoreProcess,scoreRecord,scoreConclusion,caseFor,truthOf,SAMPLES}=
-  new Function(code+';return{evalWell,auditRun,scoreProcess,scoreRecord,scoreConclusion,caseFor,truthOf,SAMPLES}')();
+const {evalWell,auditRun,scoreProcess,scoreRecord,scoreConclusion,caseFor,truthOf,SAMPLES,checkDrop,stepDone}=
+  new Function(code+';return{evalWell,auditRun,scoreProcess,scoreRecord,scoreConclusion,caseFor,truthOf,SAMPLES,checkDrop,stepDone}')();
 
 const T={neg:false,pos:true,p1:true,p2:false};
 const seq=(rs,drops=2)=>rs.flatMap((r,t)=>Array.from({length:drops},()=>({r,t})));
@@ -47,4 +47,17 @@ assert.equal(scoreConclusion({p1:'비감염',p2:'비감염'},{p1:'pos',p2:'neg'}
 assert.deepEqual(caseFor('30101'),caseFor(' 30101 '));
 const combos=new Set(Array.from({length:40},(_,i)=>{const c=truthOf(caseFor(30101+i));return `${c.p1}${c.p2}`}));
 assert.equal(combos.size,4);
+// 넣으면 안 되는 곳은 막는다
+const W0=[[],[],[],[]];
+assert.equal(checkDrop(W0,0,'cap',0),'');
+assert.match(checkDrop(W0,0,'det',0),/아직 검출 시약을/);
+assert.match(checkDrop(W0,1,'p1',0),/홈 1에는 음성 표준 시료를/);
+assert.equal(checkDrop(W0,1,'neg',0),'');
+assert.match(checkDrop([[{r:'cap',t:0},{r:'cap',t:0}],[],[],[]],0,'cap',0),/이미 2방울/);
+assert.match(checkDrop(W0,2,'cap',0),/포획 항체 넣는 단계는 끝났어요/);
+assert.ok(checkDrop(W0,4,'sub',0));
+assert.ok(!stepDone(W0,0));
+assert.ok(stepDone(SAMPLES.map(s=>[{r:s,t:1},{r:s,t:1}]),1));
+// 막힘 없이 차례대로 넣으면 교과서 결과가 나온다
+assert.deepEqual(good.map(w=>evalWell(w,T).level),[0,2,2,0]);
 console.log('ok');

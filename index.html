@@ -57,7 +57,8 @@ button:disabled{opacity:.5;cursor:not-allowed}
 label{display:grid;gap:4px;font-weight:500}
 input,textarea,select{background:var(--well);border:1px solid var(--line);border-radius:8px;padding:10px;width:100%}
 textarea{min-height:72px;resize:vertical;font-weight:400}
-.msg{color:var(--bad);font-weight:500}
+.msg{color:var(--bad);font-weight:500;background:var(--panel);border:1.5px solid var(--bad);border-radius:10px;padding:8px 12px;max-width:none}
+.msg::before{content:"⚠ "}
 .note{color:var(--muted);font-size:.9rem}
 .tw{overflow-x:auto}
 table{border-collapse:collapse;width:100%;font-size:.92rem}
@@ -118,6 +119,11 @@ main>.panel{max-width:920px;width:100%;margin-inline:auto}
 .plate.drop{padding-top:clamp(40px,8dvh,84px)}
 .wcell{position:relative}
 .well{box-shadow:inset 0 3px 6px rgb(20 24 40/.14)}
+.well[aria-pressed="true"]{background:var(--well);color:var(--ink)}
+.well.can{border:2px dashed var(--accent)}
+.well.nope{border-color:var(--bad);animation:shake .35s}
+.well.nope::before{content:"✕";position:absolute;inset:0;z-index:2;display:grid;place-items:center;font:700 2.2em var(--sans);color:var(--bad);background:color-mix(in srgb,var(--panel) 65%,transparent)}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
 .well.target{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent),inset 0 3px 6px rgb(20 24 40/.14)}
 .dropper{position:absolute;left:50%;bottom:calc(100% - 8px);width:clamp(18px,32%,40px);transform:translateX(-50%);pointer-events:none}
 .pdots{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;max-width:min(520px,58dvh);width:100%;margin-inline:auto;padding-inline:18px}
@@ -129,6 +135,7 @@ main>.panel{max-width:920px;width:100%;margin-inline:auto}
 .pill{justify-self:start;background:var(--accent-soft);border-radius:999px;padding:6px 14px;font-size:.9rem;max-width:none}
 .pill small{color:var(--muted);margin-right:6px;font-size:.82rem}
 .shelf{display:grid;gap:8px;grid-template-columns:repeat(4,minmax(0,1fr))}
+.dropbtn{width:100%;min-height:52px;font-size:1.05rem}
 .shelfhead{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center}
 .bottle{display:grid;justify-items:center;align-content:start;gap:6px;padding:10px 4px;font-size:.82rem;line-height:1.3;transition:transform .15s}
 .bottle svg{width:34px}
@@ -161,14 +168,13 @@ details.cmp summary{cursor:pointer;font-weight:500;padding:4px 0}
   .legend,.wide-only,.shelf-title{display:none}
   .flow{gap:3px}.flow i{display:none}.flow b{padding:2px 6px;font-size:.74rem}
   .timer{width:44px;height:44px}.timer span{width:36px;height:36px;font-size:.78rem}
-  .tip.used{display:none}
   .pdots>span{gap:1px 3px}.pdots i{gap:1px}.pdots u{width:5px;height:5px;border-width:1px}
   .shelf{grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
   .bottle{padding:6px 2px;font-size:.66rem;min-height:0}.bottle svg{width:22px}.bottle[aria-pressed="true"]{transform:translateY(-3px)}
   .pill{font-size:.8rem;padding:4px 10px}
   .vs>div{padding:6px}.vs .res{font-size:1.1rem}
   #chartd svg{max-height:30dvh}
-  .tip{display:none}
+  .tip{padding:6px 10px;font-size:.88rem}
   .obs textarea{min-height:52px}
   td .chip{min-height:34px;padding:3px 7px;font-size:.8rem}
 }
@@ -237,6 +243,20 @@ function auditRun(wells){
   });
   return[...e];
 }
+const STEP_OF={cap:0,neg:1,pos:1,p1:1,p2:1,det:2,sub:3};
+const STEP_OBJ=['포획 항체를','진단 시료를','검출 시약을','진단 반응물을'];
+// 지금 넣으면 안 되는 곳이면 그 까닭을, 넣어도 되면 ''를 돌려준다
+function checkDrop(wells,step,r,i){
+  if(step>3)return '네 가지 시약을 모두 넣었어요. 실험을 마치고 색을 관찰하세요.';
+  const s=STEP_OF[r];
+  if(s>step)return `아직 ${STEP_OBJ[s]} 넣을 차례가 아니에요. 지금은 ${STEP_OBJ[step]} 넣어요.`;
+  if(s<step)return `${STEP_OBJ[s].slice(0,-1)} 넣는 단계는 끝났어요. 지금은 ${STEP_OBJ[step]} 넣어요.`;
+  if(s===1&&r!==SAMPLES[i])return `홈 ${i+1}에는 ${NAMES[SAMPLES[i]]}를 넣어야 해요.`;
+  if(wells[i].filter(a=>a.r===r).length>=2)return `홈 ${i+1}에는 이미 2방울을 넣었어요.`;
+  return '';
+}
+// 지금 단계의 시약이 모든 홈에 2방울씩 들어갔는가
+function stepDone(wells,step){return step<=3&&wells.every((w,i)=>w.filter(a=>a.r===(step===1?SAMPLES[i]:['cap','','det','sub'][step])).length>=2)}
 // 채점 기준 표의 칸을 그대로 옮긴 참고 점수. 최종 점수는 교사가 정한다.
 function scoreProcess(errors){return errors?(errors>=3?10:20):30}
 function scoreRecord(rec,actual){return rec.filter((r,i)=>r===actual[i]).length*5}
@@ -262,7 +282,7 @@ const DAY_AMOUNT=[.5,2,3.5,5,6.5,7,6.5,5.5],LIM_PROTEIN=4.5,LIM_NA=1.5; // 수�
 
 const fresh=restarts=>({stage:0,id:'',name:'',run:1,wells:[[],[],[],[]],block:0,clock:0,spoite:null,
   drip:null,done:false,levels:[],bounds:[],runErrors:[],record:[null,null,null,null],inspect:null,
-  jp:'p1',ct:'g',q:0,lastWell:null,obs:{from:'',to:'',why:''},judge:{},basis:{},why:{p1:'',p2:''},pcrDone:[],pcrWrong:0,pcrPick:null,cycles:0,pcrJudge:{},day:1,answers:['','',''],
+  jp:'p1',ct:'g',q:0,lastWell:null,slips:[],nope:null,obs:{from:'',to:'',why:''},judge:{},basis:{},why:{p1:'',p2:''},pcrDone:[],pcrWrong:0,pcrPick:null,cycles:0,pcrJudge:{},day:1,answers:['','',''],
   msg:'',confirm:false,restarts,finished:''});
 let S=fresh(0);
 try{const saved=JSON.parse(localStorage.getItem(KEY));if(saved)S=Object.assign(fresh(0),saved)}catch{}
@@ -285,15 +305,18 @@ function plate(mode){
   const r=i=>S.done?'78%':Math.min(30+S.wells[i].length*7,78)+'%';
   const drop=mode==='drop',holding=drop&&S.spoite;
   const wells=S.wells.map((w,i)=>{
-    const cls=['well',S.done?'lv'+S.levels[i]:'',S.drip===i?'dripped':'',mode==='inspect'&&S.inspect===i?'sel':'',holding&&S.lastWell===i?'target':''].join(' ');
+    const cls=['well',S.done?'lv'+S.levels[i]:'',S.drip===i?'dripped':'',mode==='inspect'&&S.inspect===i?'sel':'',drop&&S.lastWell===i?'target':'',holding&&S.lastWell!==i&&!checkDrop(S.wells,S.block,S.spoite,i)?'can':'',S.nope===i?'nope':''].join(' ');
     const label=`홈 ${i+1}, ${S.done?COLORS[S.levels[i]]:w.length+'방울'}`;
-    return `<div class="wcell"><button class="${cls}" style="--c:${RC[S.spoite]||'var(--accent)'}" data-act="${mode==='inspect'?'inspect':'drop'}" data-arg="${i}" aria-label="${label}" ${mode==='view'?'disabled':''}><span class="liq" style="--r:${r(i)}"></span><span class="wn">${i+1}</span></button>${holding&&(S.lastWell??0)===i?dropperSvg(RC[S.spoite]):''}</div>`;
+    return `<div class="wcell"><button class="${cls}" style="--c:${RC[S.spoite]||'var(--accent)'}" data-act="${mode==='inspect'?'inspect':'pick'}" data-arg="${i}" aria-label="${label}${drop&&S.lastWell===i?', 고른 홈':''}" ${drop?`aria-pressed="${S.lastWell===i}"`:''} ${mode==='view'?'disabled':''}><span class="liq" style="--r:${r(i)}"></span><span class="wn">${i+1}</span></button>${holding&&S.lastWell===i?dropperSvg(RC[S.spoite]):''}</div>`;
   }).join('');
   const dots=drop?`<div class="pdots">${S.wells.map((w,i)=>`<span role="img" aria-label="홈 ${i+1}: ${GROUPS.map(([rs,n])=>n+' '+w.filter(a=>rs.includes(a.r)).length+'방울').join(', ')}">${GROUPS.map(([rs,,c])=>{const n=w.filter(a=>rs.includes(a.r)).length;return `<i style="--c:${c}"><u class="${n>0?'on':''}"></u><u class="${n>1?'on':''}"></u>${n>2?'+'+(n-2):''}</i>`}).join('')}</span>`).join('')}</div>
   <p class="legend">${GROUPS.map(([,n,c])=>`<span><span class="swatch" style="background:${c}"></span>${n}</span>`).join('')}</p>`:'';
   return `<div class="plate${drop?' drop':''}${mode!=='drop'?' '+mode:''}" role="group" aria-label="홈판">${wells}</div>
   <div class="plabels"${mode!=='drop'?' style="max-width:min(380px,34dvh)"':''}><span>음성 표준</span><span>양성 표준</span><span>사람 1</span><span>사람 2</span></div>${dots}`;
 }
+const todo=()=>S.block>3?'④까지 모두 넣었어요. <b>실험을 마치고 색 관찰하기</b>를 누르세요.'
+  :stepDone(S.wells,S.block)?`모든 홈에 ${STEP_OBJ[S.block]} 넣었어요. <b>5분 기다리기</b>를 누르세요.`
+  :`${S.block===1?'홈마다 아래에 적힌 <b>시료</b>를':`모든 홈에 <b>${STEP_OBJ[S.block]}</b>`} 2방울씩 넣어요. 시약병 집기 → 홈 고르기 → <b>한 방울 떨어뜨리기</b>`;
 const flow=step=>`<div class="flow">${['포획 항체','진단 시료','검출 시약','진단 반응물'].map((t,k)=>`<b class="${k<step?'done':k===step?'now':''}">${'①②③④'[k]} ${t}</b>`).join('<i>5분 뒤</i>')}</div>`;
 
 function molecule(i){
@@ -348,12 +371,13 @@ const views=[
 
 ()=>{const held=S.spoite&&S.lastWell!==null?S.wells[S.lastWell].filter(a=>a.r===S.spoite).length:0;return `<div class="split"><section class="panel">
   <div class="head"><div class="timer" style="--p:${Math.min(S.clock/15,1)}"><span class="num" aria-live="polite">${S.clock}분</span></div><h1>단백질을 이용한 진단</h1></div>${flow(Math.min(S.block,3))}
-  <p class="tip${S.wells.some(w=>w.length)?' used':''}">시약병을 눌러 스포이트를 집고, 홈을 누르면 한 방울씩 들어가요. 홈마다 2방울씩 넣고 5분 기다려요. 넣은 시약은 되돌릴 수 없어요.</p>
+  <p class="tip" aria-live="polite"><b>지금 할 일</b> ${todo()}</p>
   ${plate('drop')}
   ${msg()}</section>
   <section class="side"><div class="panel"><div class="shelfhead"><h2 class="shelf-title">시약 선반</h2>
-  <p class="pill" aria-live="polite"><small>집은 스포이트</small>${S.spoite?esc(NAMES[S.spoite])+(S.lastWell!==null?` · 홈 ${S.lastWell+1}에 ${held}/2방울`:' · 홈을 눌러 넣어요'):'시약병을 눌러 집어요 (홈마다 2방울)'}</p></div>
-  <div class="shelf" role="group" aria-label="시약 선반">${Object.keys(NAMES).map(k=>toggle('spoite',k,bottleSvg(RC[k])+'<span>'+SHORT[k]+'</span>',S.spoite===k,'bottle',`aria-label="${NAMES[k]}"`)).join('')}</div></div>
+  <p class="pill" aria-live="polite"><small>집은 스포이트</small>${S.spoite?esc(NAMES[S.spoite])+(S.lastWell!==null?` · 홈 ${S.lastWell+1}에 ${held}/2방울`:' · 넣을 홈을 고르세요'):'시약병을 눌러 집으세요'}</p></div>
+  <div class="shelf" role="group" aria-label="시약 선반">${Object.keys(NAMES).map(k=>toggle('spoite',k,bottleSvg(RC[k])+'<span>'+SHORT[k]+'</span>',S.spoite===k,'bottle',`aria-label="${NAMES[k]}"`)).join('')}</div>
+  ${btn('drop','',`💧 ${S.lastWell!==null?`홈 ${S.lastWell+1}에 `:''}한 방울 떨어뜨리기`,'go dropbtn')}</div>
   <div class="row actbar">${btn('wait','','5분 기다리기')}${btn('finish','','실험을 마치고 색 관찰하기','go')}</div></section></div>`},
 
 ()=>{const ctlOk=S.levels[0]===0&&S.levels[1]===2;return `<div class="split"><div class="panel"><h1>색 변화 기록</h1>
@@ -417,7 +441,7 @@ function dayResult(){
 
 function report(){
   const errs=S.runErrors.flat();
-  const sp=scoreProcess(errs.length),sr=scoreRecord(S.record,S.levels),sc=scoreConclusion(S.judge,S.basis,S.levels);
+  const sp=scoreProcess(errs.length+S.slips.length),sr=scoreRecord(S.record,S.levels),sc=scoreConclusion(S.judge,S.basis,S.levels);
   const ctlOk=S.levels[0]===0&&S.levels[1]===2;
   const list=a=>a.length?`<ul>${a.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:'없음';
   return `<div class="panel" id="report"><h1>감염병 진단 기술 체험 보고서</h1>
@@ -425,6 +449,7 @@ function report(){
   <p class="note">[10과탐2-02-01] 단백질과 핵산을 이용한 감염병 진단 기술 체험 실험 후 보고서 작성하기</p>
   <h2>실험 수행 기록</h2>
   <div class="tw"><table><tr><th class="l">실험 횟수</th><td class="l">${S.run}회${S.restarts?` (처음부터 다시 시작 ${S.restarts}회)`:''}</td></tr>
+  <tr><th class="l">잘못된 조작 (막힘, ${S.slips.length}회)</th><td class="l">${list(S.slips)}</td></tr>
   <tr><th class="l">절차 오류 (전체 실험)</th><td class="l">${list(errs)}</td></tr>
   <tr><th class="l">핵산 진단 순서 오답</th><td class="l">${S.pcrWrong}회</td></tr></table></div>
   <h2>결과 및 정리</h2>
@@ -450,12 +475,21 @@ const A={
   go:n=>go(+n),
   start(){if(!S.id.trim()||!S.name.trim()){S.msg='학번과 이름을 입력하세요.';return render()}go(1)},
   spoite(k){S.spoite=k;S.msg='';render()},
-  drop(i){
-    if(!S.spoite){S.msg='먼저 스포이트를 고르세요.';return render()}
-    S.wells[+i].push({r:S.spoite,t:S.block});S.drip=S.lastWell=+i;S.msg='';render();S.drip=null;
+  pick(i){S.lastWell=+i;S.msg='';render()},
+  drop(){const i=S.lastWell;
+    if(!S.spoite){S.msg='먼저 시약 선반에서 시약병을 눌러 스포이트를 집으세요.';return render()}
+    if(i===null){S.msg='시약을 넣을 홈을 먼저 누르세요.';return render()}
+    const why=checkDrop(S.wells,S.block,S.spoite,i);
+    if(why){S.msg=why;S.slips.push(why);S.nope=i;return render()}
+    S.wells[i].push({r:S.spoite,t:S.block});S.drip=S.lastWell=i;S.msg='';render();S.drip=null;
   },
-  wait(){S.block++;S.clock+=5;render()},
+  wait(){
+    if(S.block>3){S.msg='네 가지 시약을 모두 넣었어요. 실험을 마치고 색을 관찰하세요.';return render()}
+    if(!stepDone(S.wells,S.block)){S.msg=`아직 모든 홈에 ${STEP_OBJ[S.block]} 2방울씩 넣지 않았어요.`;S.slips.push(S.msg);return render()}
+    S.block++;S.clock+=5;S.msg='';render();
+  },
   finish(){
+    if(S.block<4){S.msg=stepDone(S.wells,3)?'진단 반응물이 반응하도록 5분 기다리기를 누른 뒤 마치세요.':'아직 네 가지 시약을 모두 넣지 않았어요.';return render()}
     const t=truth(),res=S.wells.map(w=>evalWell(w,t));
     S.levels=res.map(r=>r.level);S.bounds=res.map(r=>r.bound);
     S.runErrors.push(auditRun(S.wells));S.done=true;go(2);
@@ -514,7 +548,7 @@ let lastAct=null;
 document.addEventListener('click',e=>{
   const b=e.target.closest('[data-act]');
   if(!b)return;
-  lastAct=[b.dataset.act,b.dataset.arg];
+  lastAct=[b.dataset.act,b.dataset.arg];S.nope=null;
   A[b.dataset.act](b.dataset.arg);
   // 화면을 다시 그려도 키보드 위치를 잃지 않게 한다
   const again=[...document.querySelectorAll('[data-act]')].find(x=>x.dataset.act===lastAct[0]&&x.dataset.arg===lastAct[1]);
