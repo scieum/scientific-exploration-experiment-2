@@ -139,9 +139,9 @@ main>.panel{max-width:920px;width:100%;margin-inline:auto}
 .shelf{display:grid;gap:8px;grid-template-columns:repeat(4,minmax(0,1fr))}
 .dropbtn{width:100%;min-height:52px;font-size:1.05rem}
 .shelfhead{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center}
-.bottle{display:grid;justify-items:center;align-content:start;gap:6px;padding:10px 4px;font-size:.82rem;line-height:1.3;transition:transform .15s}
+.bottle{display:grid;justify-items:center;align-content:start;height:100%;gap:6px;padding:10px 4px;font-size:.82rem;line-height:1.3;transition:transform .15s}
 .bottle svg{width:34px}
-.bottle[aria-pressed="true"]{background:var(--accent-soft);color:var(--ink);border:2px solid var(--accent);transform:translateY(-6px)}
+.bottle[aria-pressed="true"]{background:var(--accent-soft);color:var(--ink);border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
 .vs{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;text-align:center}
 .vs>div{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px}
 .vs .res{display:block;font-size:1.4rem}
@@ -169,6 +169,33 @@ details.cmp summary{cursor:pointer;font-weight:500;padding:4px 0}
 @media (max-width:719px){.side>.intro{display:none}.howto{gap:6px}}
 @media (max-width:959px){.howto.small span{display:none}}
 .howto.small li{grid-template-columns:28px 1fr}.howto.small li::before{width:28px;height:28px;font-size:.85rem}
+.sw{display:grid;justify-items:center;gap:4px;padding:6px 6px 4px;min-height:0;border:2px solid transparent;background:none;border-radius:10px;font-size:.78rem;line-height:1.2}
+.sw:hover{border-color:var(--line)}
+.sw i{width:34px;height:34px;border-radius:50%;background:var(--sw);border:1px solid var(--line);display:grid;place-items:center;font-style:normal;font-weight:700}
+.sw[aria-pressed="true"]{background:var(--panel);color:var(--ink);border-color:var(--accent);font-weight:700}
+.sw[aria-pressed="true"] i::after{content:"✓";color:var(--accent)}
+.sw[aria-pressed="true"] i.k2::after{color:var(--on-react)}
+table.rec td .row{gap:4px;flex-wrap:nowrap}
+.slots{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.slots li{display:grid;grid-template-columns:28px 1fr auto;gap:10px;align-items:center;min-height:44px;padding:6px 12px;border-radius:12px;border:1.5px dashed var(--line);font-size:.92rem}
+.slots b{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--plate);color:var(--muted);font-size:.85rem}
+.slots li.filled{border:1px solid transparent;background:var(--accent-soft)}
+.slots li.filled b{background:var(--accent);color:var(--accent-ink)}
+.slots li.filled i{font-style:normal;color:var(--accent);font-weight:700}
+.slots li.next{border-color:var(--accent);color:var(--accent)}
+.slots li.next b{background:var(--accent-soft);color:var(--accent)}
+.slotbox summary{cursor:pointer;font-weight:700;padding:4px 0 8px}
+.deckhead{margin-top:6px}
+.desk-deck,.mob-deck{display:grid;gap:8px}
+@media (min-width:960px){.mob-deck{display:none}.desk-deck .deck{grid-template-columns:1fr}}
+@media (max-width:959px){.desk-deck{display:none}}
+.deck{display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(220px,1fr))}
+.pcard{position:relative;display:flex;align-items:center;gap:10px;text-align:left;padding:12px 14px;border-radius:12px;box-shadow:0 1px 0 var(--line);min-height:56px}
+.pcard::before{content:"";flex:none;width:6px;align-self:stretch;border-radius:3px;background:var(--accent-soft)}
+.pcard:hover{border-color:var(--accent);transform:translateY(-1px)}
+.pcard.nope{border-color:var(--bad);animation:shake .35s}
+.pcard.nope::after{content:"✕";position:absolute;right:10px;top:6px;color:var(--bad);font-weight:700}
+@media (max-width:719px){.slots li.empty{display:none}.slots li{min-height:38px;padding:4px 10px;font-size:.85rem}.deck{grid-template-columns:1fr}.pcard{min-height:44px;padding:8px 12px;font-size:.88rem}}
 .teacher{display:none}
 .res{font-weight:700}
 .res.pos{color:var(--react-text)}
@@ -183,7 +210,7 @@ details.cmp summary{cursor:pointer;font-weight:500;padding:4px 0}
 }
 @media (max-width:959px){.desk-only{display:none}
   .shelf{grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
-  .bottle{padding:6px 2px;font-size:.66rem;min-height:0}.bottle svg{width:22px}.bottle[aria-pressed="true"]{transform:translateY(-3px)}
+  .bottle{padding:6px 2px;font-size:.66rem;min-height:0}.bottle svg{width:22px}
   .dropbtn{min-height:44px;font-size:.95rem}.bench.drop .plate{padding-top:clamp(32px,6dvh,60px)}}
 @media (max-width:719px){.rc{display:none}}
 @media (min-width:720px){.rcm{display:none}}
@@ -239,6 +266,7 @@ details.cmp summary{cursor:pointer;font-weight:500;padding:4px 0}
   .tip{padding:6px 10px;font-size:.88rem}
   .obs textarea{min-height:52px}
   td .chip{min-height:32px;padding:2px 5px;font-size:.72rem}
+  .sw{padding:2px 1px;font-size:.64rem}.sw i{width:24px;height:24px}
   table.rec td .row{gap:3px;flex-wrap:nowrap}
   table.rec th,table.rec td{padding:4px}
 }
@@ -347,7 +375,7 @@ const DAY_AMOUNT=[.5,2,3.5,5,6.5,7,6.5,5.5],LIM_PROTEIN=4.5,LIM_NA=1.5; // 수�
 
 const fresh=restarts=>({stage:0,id:'',name:'',run:1,wells:[[],[],[],[]],block:0,clock:0,spoite:null,
   drip:null,done:false,levels:[],bounds:[],runErrors:[],record:[null,null,null,null],inspect:null,
-  jp:'p1',ct:'g',q:0,lastWell:null,slips:[],nope:null,waitUntil:0,obs:{from:'',to:'',why:''},judge:{},basis:{},why:{p1:'',p2:''},pcrDone:[],pcrWrong:0,pcrPick:null,cycles:0,pcrJudge:{},day:1,answers:['','',''],
+  jp:'p1',ct:'g',q:0,pcrNope:null,lastWell:null,slips:[],nope:null,waitUntil:0,obs:{from:'',to:'',why:''},judge:{},basis:{},why:{p1:'',p2:''},pcrDone:[],pcrWrong:0,pcrPick:null,cycles:0,pcrJudge:{},day:1,answers:['','',''],
   msg:'',confirm:false,restarts,finished:''});
 let S=fresh(0);
 try{const saved=JSON.parse(localStorage.getItem(KEY));if(saved)S=Object.assign(fresh(0),saved)}catch{}
@@ -459,7 +487,7 @@ const views=[
   ${plate('inspect')}
   <div class="tw"><table class="rec"><tr><th>홈</th><th class="rc">포획 항체</th><th class="rc">진단 시료</th><th class="rc">검출 시약</th><th class="rc">진단 반응물</th><th class="rcm">넣은 방울<br><small class="note">항체·시료<br>검출·반응</small></th><th>색깔</th></tr>${SAMPLES.map((s,i)=>{const w=S.wells[i],n=rs=>w.filter(a=>rs.includes(a.r)).length;
     const smp=SAMPLES.filter(x=>n([x])).map(x=>`${NAMES[x]} ${n([x])}방울`).join('<br>')||'0방울';
-    return `<tr><td>${i+1}</td><td class="rc">${n(['cap'])}방울</td><td class="rc">${smp}</td><td class="rc">${n(['det'])}방울</td><td class="rc">${n(['sub'])}방울</td><td class="rcm">${[n(['cap']),n(SAMPLES),n(['det']),n(['sub'])].join(' · ')}</td><td><div class="row" style="justify-content:center">${COLORS.map((c,k)=>toggle('rec',`${i}:${k}`,c,S.record[i]===k,'chip')).join('')}</div></td></tr>`}).join('')}</table></div>
+    return `<tr><td>${i+1}</td><td class="rc">${n(['cap'])}방울</td><td class="rc">${smp}</td><td class="rc">${n(['det'])}방울</td><td class="rc">${n(['sub'])}방울</td><td class="rcm">${[n(['cap']),n(SAMPLES),n(['det']),n(['sub'])].join(' · ')}</td><td><div class="row" style="justify-content:center">${COLORS.map((c,k)=>toggle('rec',`${i}:${k}`,`<i style="--sw:${['var(--well)','var(--react-pale)','var(--react)'][k]}" class="k${k}"></i><span>${c}</span>`,S.record[i]===k,'sw',`aria-label="홈 ${i+1} ${c}"`)).join('')}</div></td></tr>`}).join('')}</table></div>
   ${msg()}</div>
   <section class="side">${S.inspect!==null?molecule(S.inspect):'<div class="panel side-ph"><h2>분자 수준으로 보기</h2><p class="note">홈판에서 홈을 누르면 그 홈에서 일어난 결합을 볼 수 있어요.</p></div>'}
   ${ctlOk?'':'<p class="note">대조군이 예상과 달라 보이면 다시 실험할 수 있어요. 횟수와 오류는 기록돼요.</p>'}
@@ -474,16 +502,16 @@ const views=[
   ${msg()}<div class="row actbar">${btn('toPcr','','핵산 진단으로','go')}</div></div>`,
 
 ()=>{const c=caseFor(S.id),orderDone=S.pcrDone.length===5,cyc=orderDone;return `<div class="split"><section class="panel"><h1>핵산을 이용한 진단</h1>
-  ${orderDone?`<details ${matchMedia('(min-width:960px)').matches?'open':''}><summary>검사 순서 완료 ✓ <span class="note">펼쳐 보기</span></summary>${S.pcrDone.map((k,i)=>`<span class="card-done">${i+1}. ${PCR_STEPS[k]}</span>`).join('')}</details>`:`<h2>검사 순서대로 카드를 누르세요</h2>${S.pcrDone.map((k,i)=>`<span class="card-done">${i+1}. ${PCR_STEPS[k]}</span>`).join('')}`}
-  ${orderDone?'':`<div class="row">${PCR_SHOW.filter(k=>!S.pcrDone.includes(k)).map(k=>btn('pcr',k,PCR_STEPS[k],'chip')).join('')}</div>`}
-  ${orderDone?'':msg()}</section>
+  ${orderDone?`<details class="slotbox" ${matchMedia('(min-width:960px)').matches?'open':''}><summary>검사 순서 완료 ✓ <span class="note">펼쳐 보기</span></summary>${pcrSlots()}</details>`
+    :`<p class="tip"><b>지금 할 일</b> 검사 순서대로 카드를 골라 빈칸을 채워요.</p>${pcrSlots()}
+  <div class="mob-deck">${pcrDeck()}</div>`}</section>
   <section class="panel${orderDone?'':' wide-only'}">${cyc?`<h2>사람 3과 4의 핵산을 증폭하세요</h2>
   <label><span>증폭 횟수 <span class="num" id="cyc">${S.cycles}회</span></span>
   <input id="f-cycles" type="range" min="0" max="30" value="${S.cycles}" data-range="cycles"></label>
   <p>핵산 1개는 <b id="cyccopy" class="num">${(2**S.cycles).toLocaleString('ko-KR')}개</b>로 늘어나요.</p>
   <div class="charts2"><div id="chart3">${pcrChart(c.p3,S.cycles,'사람 3')}</div><div id="chart4">${pcrChart(!c.p3,S.cycles,'사람 4')}</div></div>
   <div class="row" id="pcrj">${pcrJudge()}</div>${msg()}
-  <div class="row actbar">${btn('toCompare','','두 기술 비교하기','go')}</div>`:'<p class="note">순서를 모두 맞추면 증폭을 시작할 수 있어요.</p>'}</section></div>`},
+  <div class="row actbar">${btn('toCompare','','두 기술 비교하기','go')}</div>`:`<div class="desk-deck">${pcrDeck()}</div>`}</section></div>`},
 
 ()=>`<div class="tabs mid-only">${[['g','그래프로 찾기'],['o','관찰 기록 쓰기']].map(([k,n])=>toggle('ct',k,n,S.ct===k)).join('')}</div>
   <div class="split cmpview" data-show="${S.ct}"><section class="panel cmp-g"><h1>감염 초기 환자를 두 기술로 검사하면?</h1>
@@ -508,6 +536,15 @@ const views=[
 ()=>report(),
 ];
 
+function pcrDeck(){
+  return `<p class="note deckhead">카드 더미 · 남은 ${5-S.pcrDone.length}장 · 순서를 다 맞추면 증폭을 시작해요</p>
+  <div class="deck">${PCR_SHOW.filter(k=>!S.pcrDone.includes(k)).map(k=>btn('pcr',k,`<span>${PCR_STEPS[k]}</span>`,'pcard'+(S.pcrNope===k?' nope':''))).join('')}</div>${msg()}`;
+}
+function pcrSlots(){
+  const done=S.pcrDone,next=done.length;
+  return `<ol class="slots">${PCR_STEPS.map((_,k)=>k<next?`<li class="filled"><b>${k+1}</b><span>${PCR_STEPS[done[k]]}</span><i aria-label="맞음">✓</i></li>`
+    :k===next?`<li class="next"><b>${k+1}</b><span>${k?'다음':'첫'} 단계 카드를 고르세요</span></li>`:`<li class="empty"><b>${k+1}</b><span></span></li>`).join('')}</ol>`;
+}
 function pcrJudge(){
   if(S.cycles<30)return '<span class="note">30회까지 증폭한 뒤 판정할 수 있어요.</span>';
   return [['p3','사람 3'],['p4','사람 4']].map(([p,n])=>`<b>${n}</b>${['감염','비감염'].map(v=>toggle('pcrJ',`${p}:${v}`,v,S.pcrJudge[p]===v,'chip')).join('')}`).join(' ');
@@ -588,7 +625,7 @@ const A={
   },
   pcr(k){
     if(+k===S.pcrDone.length){S.pcrDone.push(+k);S.msg=''}
-    else{S.pcrWrong++;S.msg='그 단계는 아직 할 수 없어요. 앞 단계를 먼저 생각해 보세요.'}
+    else{S.pcrWrong++;S.pcrNope=+k;S.msg=`${S.pcrDone.length+1}번째 단계가 아니에요. 앞 단계에서 무엇을 했는지 생각해 보세요.`}
     render();
   },
   pcrJ(a){const[p,v]=parts(a);S.pcrJudge[p]=v;render()},
@@ -634,7 +671,7 @@ let lastAct=null;
 document.addEventListener('click',e=>{
   const b=e.target.closest('[data-act]');
   if(!b)return;
-  lastAct=[b.dataset.act,b.dataset.arg];S.nope=null;
+  lastAct=[b.dataset.act,b.dataset.arg];S.nope=null;S.pcrNope=null;
   A[b.dataset.act](b.dataset.arg);
   // 화면을 다시 그려도 키보드 위치를 잃지 않게 한다
   const again=[...document.querySelectorAll('[data-act]')].find(x=>x.dataset.act===lastAct[0]&&x.dataset.arg===lastAct[1]);
