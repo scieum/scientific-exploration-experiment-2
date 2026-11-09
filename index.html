@@ -232,6 +232,25 @@ table.rec td .row{gap:4px;flex-wrap:nowrap}
 .qact{display:flex}.qact button{flex:1;min-height:52px;font-size:1.05rem}
 @media (max-width:719px){.qwrap{padding:0;align-items:end}.qcard{border-radius:20px 20px 0 0;max-height:96dvh;padding:16px}.qopt{min-height:48px;padding:10px 12px;font-size:.92rem}}
 .sheetq{display:grid;gap:12px;padding-left:1.4em;max-width:70ch}
+.person{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:clamp(14px,2.4dvh,22px);display:flex;flex-direction:column;gap:clamp(8px,1.6dvh,14px)}
+.person h2 .note{font-weight:400;margin-left:4px}
+.cmpwells{display:flex;align-items:flex-end;justify-content:center;gap:clamp(10px,2vw,22px);background:var(--plate);border-radius:16px;padding:clamp(10px,2dvh,18px)}
+.mw{display:grid;justify-items:center;gap:2px;font-size:.78rem;color:var(--muted);text-align:center}
+.mw i{width:clamp(44px,8dvh,76px);aspect-ratio:1;border-radius:50%;background:var(--c);box-shadow:inset 0 0 0 clamp(5px,.9dvh,8px) var(--well),0 0 0 2px var(--line);display:grid;place-items:center;font:500 .85rem var(--mono);font-style:normal;color:var(--ink)}
+.mw b{color:var(--ink);font-size:.82rem}
+.mw.me i{box-shadow:inset 0 0 0 clamp(5px,.9dvh,8px) var(--well),0 0 0 3px var(--accent)}.mw.me b{color:var(--accent)}
+.vsline{align-self:center;width:1px;height:48px;background:var(--line)}
+.stepq{font-weight:500;max-width:none}.stepq b{color:var(--accent);margin-right:2px}
+.opts3{display:grid;gap:8px}
+.opt{display:flex;align-items:center;gap:10px;text-align:left;padding:10px 14px;border-radius:12px;min-height:46px}
+.cdot{flex:none;width:22px;height:22px;border-radius:50%;background:var(--c);box-shadow:0 0 0 1.5px var(--line)}
+.cdot.none{background:none;border:1.5px dashed var(--line);box-shadow:none}
+.opt[aria-pressed="true"] .cdot{box-shadow:0 0 0 2px var(--accent-ink)}
+.opts2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.opt.big{justify-content:center;min-height:clamp(48px,8dvh,72px);font-size:1.15rem;font-weight:700}
+.opts3{grid-template-columns:repeat(3,minmax(0,1fr))}.opts3 .opt{flex-direction:column;justify-content:center;text-align:center;gap:6px;padding:8px 6px;min-height:clamp(64px,10dvh,96px)}
+@media (max-width:719px){.opts3 .opt{font-size:.82rem}.person{padding:12px;gap:8px}.mw i{width:44px}.cmpwells{padding:8px}.stepq{font-size:.92rem}}
+@media (min-width:960px){.judgeview .persons{flex:1;min-height:0;gap:20px}.judgeview .person{justify-content:space-between}}
 .teacher{display:none}
 .res{font-weight:700}
 .res.pos{color:var(--react-text)}
@@ -553,12 +572,9 @@ const views=[
   ${ctlOk?'':'<p class="note">대조군이 예상과 달라 보이면 다시 실험할 수 있어요. 횟수와 오류는 기록돼요.</p>'}
   <div class="row actbar">${ctlOk?'':btn('retry','','새 홈판으로 다시 실험')}${btn('toJudge','','감염 판정하기','go')}</div></section></div>`},
 
-()=>`<div class="panel" style="max-width:1180px"><h1>대조군과 비교해 판정하기</h1>${plate('view')}
+()=>`<div class="panel judgeview"><h1>대조군과 비교해 판정하기</h1>
   <div class="tabs narrow-only">${[['p1','사람 1'],['p2','사람 2']].map(([p,n])=>toggle('jp',p,n+(S.judge[p]&&S.basis[p]?' ✓':''),S.jp===p)).join('')}</div>
-  <div class="persons" data-show="${S.jp}">${[['p1','사람 1',3],['p2','사람 2',4]].map(([p,name,w])=>`<div class="person person-${p}"><h2>${name} (홈 ${w})</h2>
-  <div class="row">${['감염','비감염'].map(v=>toggle('judge',`${p}:${v}`,v,S.judge[p]===v,'chip')).join('')}</div>
-  <div class="row">${[['pos','양성 대조군(홈 2)과 같다'],['neg','음성 대조군(홈 1)과 같다'],['none','비교하지 않았다']].map(([k,v])=>toggle('basis',`${p}:${k}`,v,S.basis[p]===k,'chip')).join('')}</div>
-</div>`).join('')}</div>
+  <div class="persons" data-show="${S.jp}">${[['p1','사람 1',2],['p2','사람 2',3]].map(([p,name,w])=>personCard(p,name,w)).join('')}</div>
   ${msg()}<div class="row actbar">${btn('toPcr','','핵산 진단으로','go')}</div></div>`,
 
 ()=>{const c=caseFor(S.id),orderDone=S.pcrDone.length===5,cyc=orderDone;return `<div class="split"><section class="panel"><h1>핵산을 이용한 진단</h1>
@@ -596,6 +612,16 @@ const views=[
 ()=>report(),
 ];
 
+const LVC=['var(--liq)','var(--react-pale)','var(--react)'];
+const miniWell=(i,label,me)=>`<div class="mw${me?' me':''}"><i style="--c:${LVC[S.levels[i]]??'var(--liq)'}">${i+1}</i><b>${label}</b><span>홈 ${i+1}</span></div>`;
+function personCard(p,name,w){
+  return `<section class="person person-${p}"><h2>${name} <span class="note">홈 ${w+1}</span></h2>
+  <div class="cmpwells">${miniWell(0,'음성 대조군')}${miniWell(1,'양성 대조군')}<span class="vsline" aria-hidden="true"></span>${miniWell(w,name,true)}</div>
+  <p class="stepq"><b>①</b> ${name}의 홈은 어느 대조군과 색이 같나요?</p>
+  <div class="opts3">${[['neg','음성 대조군과 같다',0],['pos','양성 대조군과 같다',1],['none','비교하지 않았다',null]].map(([k,t,i])=>toggle('basis',`${p}:${k}`,`${i!==null?`<i class="cdot" style="--c:${LVC[S.levels[i]]??'var(--liq)'}"></i>`:'<i class="cdot none"></i>'}<span>${t}</span>`,S.basis[p]===k,'opt')).join('')}</div>
+  <p class="stepq"><b>②</b> ${name}은 감염되었나요?</p>
+  <div class="opts2">${['감염','비감염'].map(v=>toggle('judge',`${p}:${v}`,v,S.judge[p]===v,'opt big')).join('')}</div></section>`;
+}
 function pcrDeck(){
   return `<p class="note deckhead">카드 더미 · 남은 ${5-S.pcrDone.length}장 · 순서를 다 맞추면 증폭을 시작해요</p>
   <div class="deck">${PCR_SHOW.filter(k=>!S.pcrDone.includes(k)).map(k=>btn('pcr',k,`<span>${PCR_STEPS[k]}</span>`,'pcard'+(S.pcrNope===k?' nope':''))).join('')}</div>${msg()}`;
