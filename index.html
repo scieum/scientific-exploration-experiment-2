@@ -237,6 +237,23 @@ table.rec td .row{gap:4px;flex-wrap:nowrap}
 .qfb.no{background:color-mix(in srgb,var(--bad) 10%,var(--panel))}.qfb.no b{color:var(--bad)}
 .qact{display:flex}.qact button{flex:1;min-height:52px;font-size:1.05rem}
 @media (max-width:719px){.qwrap{padding:0;align-items:end}.qcard{border-radius:20px 20px 0 0;max-height:96dvh;padding:16px}.qopt{min-height:48px;padding:10px 12px;font-size:.92rem}}
+.qrev .rqlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(380px,100%),1fr));gap:12px;align-items:start}
+.rq{border:1px solid var(--line);border-radius:16px;padding:16px 18px;display:grid;gap:8px;background:var(--panel)}
+.rqh{display:flex;align-items:center;gap:8px}.rqh>b{color:var(--accent);font-size:1.05rem}
+.rqt{background:var(--plate);color:var(--muted);border-radius:6px;padding:2px 8px;font-size:.76rem;font-weight:500}
+.rqb{margin-left:auto;border-radius:999px;padding:3px 10px;font-size:.76rem;font-weight:700;white-space:nowrap}
+.rqb.ok{color:var(--good);background:color-mix(in srgb,var(--good) 12%,var(--panel))}
+.rqb.bad{color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,var(--panel))}
+.rq h3{font-size:.98rem;line-height:1.5;margin:0}
+.rqa{color:var(--good);font-weight:500;font-size:.92rem;max-width:none}
+.rqx{color:var(--muted);font-size:.86rem;max-width:none}
+.rqe{background:var(--plate);border-radius:10px;padding:10px 12px;font-size:.88rem;display:grid;gap:2px}.rqe small{color:var(--muted);font-weight:700}
+.qscore{display:flex;align-items:baseline;gap:8px}.qscore b{font-size:2.6rem;line-height:1;color:var(--accent)}.qscore span{color:var(--muted);font-weight:700;font-size:1.2rem}.qscore em{font-style:normal;font-weight:500}
+.qsum{background:var(--accent-soft);border-radius:14px;padding:12px 14px;display:grid;gap:8px}.qsum .qscore b{font-size:1.7rem}
+.qside{display:grid;gap:14px}.qeye{color:var(--accent);font-weight:700}
+.qstg{display:grid;gap:10px}.qstg div{display:flex;align-items:center;gap:6px}.qstg span{flex:1;font-weight:500}
+.qd{display:inline-block;width:14px;height:14px;border-radius:50%;background:var(--good);vertical-align:-2px}.qd.bad{background:var(--bad)}
+.qtabs .chip{min-width:96px}
 .sheetq{display:grid;gap:12px;padding-left:1.4em;max-width:70ch}
 .person{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:clamp(14px,2.4dvh,22px);display:flex;flex-direction:column;gap:clamp(8px,1.6dvh,14px)}
 .person h2 .note{font-weight:400;margin-left:4px}
@@ -461,7 +478,7 @@ function scoreConclusion(judge,basis,levels){
 
 <script>
 const KEY='dx-sim-v5'; // v5: 확인 문제 추가, 서술 칸 삭제
-const STAGES=['소개','단백질 진단','결과 기록','감염 판정','핵산 진단','기술 비교','활동지 안내','결과지'];
+const STAGES=['소개','단백질 진단','결과 기록','감염 판정','핵산 진단','기술 비교','퀴즈 몰아보기','활동지 안내','결과지'];
 const PCR_STEPS=[
   '검사 대상자(사람 3과 4)로부터 시료를 채취한다.',
   '시료에서 핵산을 추출한다.',
@@ -474,10 +491,10 @@ const DAY_AMOUNT=[.5,2,3.5,5,6.5,7,6.5,5.5],LIM_PROTEIN=4.5,LIM_NA=1.5; // 수�
 
 const fresh=restarts=>({stage:0,id:'',name:'',run:1,wells:[[],[],[],[]],block:0,clock:0,spoite:null,
   drip:null,done:false,levels:[],bounds:[],runErrors:[],record:[null,null,null,null],inspect:null,
-  jp:'p1',ct:'g',q:0,pcrNope:null,lastWell:null,elisa:false,elisaSeen:false,slips:[],nope:null,waitUntil:0,obs:{from:'',to:''},obsOk:null,obsTry:0,quiz:null,passed:{},qlog:{},judge:{},basis:{},pcrDone:[],pcrWrong:0,pcrPick:null,cycles:0,pcrJudge:{},day:1,answers:['','',''],
+  jp:'p1',ct:'g',q:0,pcrNope:null,lastWell:null,elisa:false,elisaSeen:false,slips:[],nope:null,waitUntil:0,obs:{from:'',to:''},obsOk:null,obsTry:0,quiz:null,passed:{},qlog:{},qmiss:{},qf:'all',judge:{},basis:{},pcrDone:[],pcrWrong:0,pcrPick:null,cycles:0,pcrJudge:{},day:1,answers:['','',''],
   msg:'',confirm:false,restarts,finished:''});
 let S=fresh(0);
-try{const saved=JSON.parse(localStorage.getItem(KEY));if(saved)S=Object.assign(fresh(0),saved)}catch{}
+try{const saved=JSON.parse(localStorage.getItem(KEY));if(saved){S=Object.assign(fresh(0),saved);if(!saved.qmiss&&saved.stage>=6)S.stage++}}catch{}
 const WAIT_MS=10000; // 실제 5분을 수업용으로 10초로 줄임
 const waitFrac=()=>S.waitUntil?Math.min(1,1-(S.waitUntil-Date.now())/WAIT_MS):0;
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch{}};
@@ -623,7 +640,20 @@ const views=[
   <div class="panel obs"><h2>관찰 기록</h2><p>두 검사의 결과가 서로 다른 날</p>
   <p>감염 후<input type="number" min="0" max="7" inputmode="numeric" aria-label="시작일" data-bind="obs.from" value="${esc(S.obs.from)}">일부터<input type="number" min="0" max="7" inputmode="numeric" aria-label="마지막 날" data-bind="obs.to" value="${esc(S.obs.to)}">일까지 ${btn('obsCheck','','확인','small')}</p>
   ${S.obsOk?`<p class="qfb ok"><b>✓ 맞아요!</b> 감염 ${diffRange(DAY_AMOUNT,LIM_PROTEIN,LIM_NA).join('~')}일에는 병원체의 양이 핵산 검사의 검출 한계는 넘지만 단백질 검사의 검출 한계에는 못 미쳐요.</p>`:S.obsOk===false?'<p class="qfb no" role="alert"><b>다시 그래프를 확인해 보세요.</b> 날짜를 옮기며 두 검사의 결과가 다른 날을 찾아요.</p>':''}</div>
-  ${msg()}<div class="row actbar">${btn('toThink','','활동지 안내로','go')}</div></section></div>`,
+  ${msg()}<div class="row actbar">${btn('toThink','','퀴즈 몰아보기','go')}</div></section></div>`,
+
+()=>{const all=quizAll(),miss=all.filter(x=>x.n),show=S.qf==='miss'?miss:all,first=all.length-miss.length;
+  const score=`<div class="qscore"><b>${first}</b><span>/ ${all.length}</span><em>한 번에 맞혔어요</em></div><div class="qbar"><i style="width:${first/all.length*100}%"></i></div>`;
+  return `<div class="split qrev"><section class="panel"><h1>확인 문제 몰아보기</h1>
+  <p class="note">실험하며 푼 ${all.length}문제를 한곳에 모았어요. 정답과 해설을 다시 읽고 활동지로 넘어가요.</p>
+  <div class="qsum mob-only">${score}</div>
+  <div class="row qtabs">${toggle('qf','all',`전체 ${all.length}`,S.qf!=='miss','chip')}${toggle('qf','miss',`틀렸던 문제 ${miss.length}`,S.qf==='miss','chip')}</div>
+  <div class="rqlist">${show.length?show.map(rqCard).join(''):'<p class="note">틀렸던 문제가 없어요. 모두 한 번에 맞혔어요!</p>'}</div></section>
+  <section class="side"><div class="desk-only qside"><small class="qeye">결과 요약</small>${score}
+  <div class="qstg">${QGROUPS.map(([n,keys])=>`<div><span>${n}</span>${all.filter(x=>keys.includes(x.k)).map(x=>`<i class="qd${x.n?' bad':''}" title="Q${x.no}"></i>`).join('')}</div>`).join('')}</div>
+  <p class="note"><i class="qd"></i> 한 번에 정답 <i class="qd bad"></i> 틀린 적 있음</p></div>
+  <p class="note desk-only">결과지에는 문제마다 틀린 횟수가 기록돼요.</p>
+  <div class="row actbar">${btn('go','7','활동지 안내로','go go-m')}</div></section></div>`},
 
 ()=>`<div class="panel"><h1>활동지에 정리해요</h1>
   <p>시뮬레이션의 확인 문제를 모두 맞혔어요. 아래 질문은 <b>종이 활동지</b>에 자신의 말로 써요.</p>
@@ -634,6 +664,12 @@ const views=[
 ()=>report(),
 ];
 
+const QGROUPS=[['단백질 ①~④',['step0','step1','step2','step3']],['대조군',['record']],['양성·음성',['judge']],['핵산 진단',['pcr']],['두 기술 비교',['compare']]];
+// 확인 문제 전부를 푼 순서대로 펼친다 (n: 틀린 횟수, picks: 틀리게 고른 보기)
+const quizAll=()=>Object.entries(QUIZ).flatMap(([k,qz])=>qz.items.map((it,i)=>({k,i,it,tag:qz.title.replace(' 확인 문제',''),n:S.qlog[k+i]||0,picks:S.qmiss[k+i]||[]}))).map((x,j)=>({...x,no:j+1}));
+const rqCard=x=>{const N='①②③④',it=x.it;return `<article class="rq"><div class="rqh"><b>Q${x.no}</b><span class="rqt">${esc(x.tag)}</span><span class="rqb ${x.n?'bad':'ok'}">${x.n?x.n+'번 틀림':'한 번에 정답'}</span></div>
+  <h3>${esc(it.q)}</h3><p class="rqa">✓ 정답 ${N[it.a]} ${esc(it.o[it.a])}</p>${x.picks.map(k=>`<p class="rqx"><s>✕ 내가 고른 답 ${N[k]} ${esc(it.o[k])}</s></p>`).join('')}
+  <div class="rqe"><small>해설</small>${esc(it.e)}</div></article>`};
 const LVC=['var(--liq)','var(--react-pale)','var(--react)'];
 const miniWell=(i,label,me)=>`<div class="mw${me?' me':''}"><i style="--c:${LVC[S.levels[i]]??'var(--liq)'}">${i+1}</i><b>${label}</b><span>홈 ${i+1}</span></div>`;
 function personCard(p,name,w){
@@ -782,14 +818,15 @@ const A={
   // 확인 문제: 고르기 → 확인 → (틀리면 다시 고르기) → 다음
   qpick(k){if(S.quiz.ok||S.quiz.tried.includes(+k))return;S.quiz.pick=+k;render()},
   qcheck(){const z=S.quiz,it=QUIZ[z.key].items[z.i];if(z.pick===null)return;
-    if(z.pick===it.a){z.ok=true}else{z.tried.push(z.pick);S.qlog[z.key+z.i]=(S.qlog[z.key+z.i]||0)+1;z.pick=null}
+    if(z.pick===it.a){z.ok=true}else{z.tried.push(z.pick);S.qlog[z.key+z.i]=(S.qlog[z.key+z.i]||0)+1;(S.qmiss[z.key+z.i]??=[]).push(z.pick);z.pick=null}
     render()},
   qnext(){const z=S.quiz;
     if(z.i<QUIZ[z.key].items.length-1){Object.assign(z,{i:z.i+1,pick:null,tried:[],ok:false});return render()}
     S.passed[z.key]=true;S.quiz=null;A[z.cont]()},
   qclose(){S.quiz=null;render()},
   elisa(v){S.elisa=v==='1';render()},
-  finishAll(){S.finished=new Date().toLocaleString('ko-KR');go(7)},
+  qf(f){S.qf=f;render()},
+  finishAll(){S.finished=new Date().toLocaleString('ko-KR');go(8)},
   print(){window.print()},
   copy(){
     const text=`학번 ${S.id} 이름 ${S.name}
