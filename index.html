@@ -323,10 +323,12 @@ const DAY_AMOUNT=[.5,2,3.5,5,6.5,7,6.5,5.5],LIM_PROTEIN=4.5,LIM_NA=1.5; // 수�
 
 const fresh=restarts=>({stage:0,id:'',name:'',run:1,wells:[[],[],[],[]],block:0,clock:0,spoite:null,
   drip:null,done:false,levels:[],bounds:[],runErrors:[],record:[null,null,null,null],inspect:null,
-  jp:'p1',ct:'g',q:0,lastWell:null,slips:[],nope:null,obs:{from:'',to:'',why:''},judge:{},basis:{},why:{p1:'',p2:''},pcrDone:[],pcrWrong:0,pcrPick:null,cycles:0,pcrJudge:{},day:1,answers:['','',''],
+  jp:'p1',ct:'g',q:0,lastWell:null,slips:[],nope:null,waitUntil:0,obs:{from:'',to:'',why:''},judge:{},basis:{},why:{p1:'',p2:''},pcrDone:[],pcrWrong:0,pcrPick:null,cycles:0,pcrJudge:{},day:1,answers:['','',''],
   msg:'',confirm:false,restarts,finished:''});
 let S=fresh(0);
 try{const saved=JSON.parse(localStorage.getItem(KEY));if(saved)S=Object.assign(fresh(0),saved)}catch{}
+const WAIT_MS=10000; // 실제 5분을 수업용으로 10초로 줄임
+const waitFrac=()=>S.waitUntil?Math.min(1,1-(S.waitUntil-Date.now())/WAIT_MS):0;
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch{}};
 
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -355,7 +357,7 @@ function plate(mode){
   return `<div class="bench ${mode}"><div class="plate" role="group" aria-label="홈판">${wells}</div>
   <div class="plabels"><span>음성 표준</span><span>양성 표준</span><span>사람 1</span><span>사람 2</span></div>${dots}</div>`;
 }
-const todo=()=>S.block>3?'④까지 모두 넣었어요. <b>실험을 마치고 색 관찰하기</b>를 누르세요.'
+const todo=()=>S.waitUntil?`⏳ 반응을 기다리는 중이에요. ${Math.ceil((S.waitUntil-Date.now())/1000)}초 남았어요. (실제로는 5분)`:S.block>3?'④까지 모두 넣었어요. <b>실험을 마치고 색 관찰하기</b>를 누르세요.'
   :stepDone(S.wells,S.block)?`모든 홈에 ${STEP_OBJ[S.block]} 넣었어요. <b>5분 기다리기</b>를 누르세요.`
   :`${S.block===1?'홈마다 아래에 적힌 <b>시료</b>를':`모든 홈에 <b>${STEP_OBJ[S.block]}</b>`} 2방울씩 넣어요.<span class="desk-only"> 시약병 집기 → 홈 고르기 → <b>한 방울 떨어뜨리기</b></span>`;
 const flow=step=>`<div class="flow">${['포획 항체','진단 시료','검출 시약','진단 반응물'].map((t,k)=>`<b class="${k<step?'done':k===step?'now':''}">${'①②③④'[k]} ${t}</b>`).join('<i>5분 뒤</i>')}</div>`;
@@ -411,16 +413,16 @@ const views=[
   ${msg()}<div class="row">${btn('start','','실험 시작하기','go')}</div></section></div>`,
 
 ()=>{const held=S.spoite&&S.lastWell!==null?S.wells[S.lastWell].filter(a=>a.r===S.spoite).length:0;return `<div class="split"><section class="panel">
-  <div class="head"><div class="timer" style="--p:${Math.min(S.clock/15,1)}"><span class="num" aria-live="polite">${S.clock}분</span></div><h1>단백질을 이용한 진단</h1></div>${flow(Math.min(S.block,3))}
+  <div class="head"><div class="timer" style="--p:${Math.min((S.clock+5*waitFrac())/20,1)}"><span class="num">${Math.floor(S.clock+5*waitFrac())}분</span></div><h1>단백질을 이용한 진단</h1></div>${flow(Math.min(S.block,3))}
   <p class="tip" aria-live="polite"><b>지금 할 일</b> ${todo()}</p>
   ${plate('drop')}
   ${msg()}</section>
   <section class="side"><div class="panel"><div class="shelfhead"><h2 class="shelf-title">시약 선반</h2>
   <p class="pill" aria-live="polite"><small>집은 스포이트</small>${S.spoite?esc(NAMES[S.spoite])+(S.lastWell!==null?` · 홈 ${S.lastWell+1}에 ${held}/2방울`:' · 넣을 홈을 고르세요'):'시약병을 눌러 집으세요'}</p></div>
   <div class="shelf" role="group" aria-label="시약 선반">${Object.keys(NAMES).map(k=>toggle('spoite',k,bottleSvg(RC[k])+'<span>'+SHORT[k]+'</span>',S.spoite===k,'bottle',`aria-label="${NAMES[k]}"`)).join('')}</div>
-  ${btn('drop','',`💧 ${S.lastWell!==null?`홈 ${S.lastWell+1}에 `:''}한 방울 떨어뜨리기`,'go dropbtn')}</div>
+  ${btn('drop','',`💧 ${S.lastWell!==null?`홈 ${S.lastWell+1}에 `:''}한 방울 떨어뜨리기`,'go dropbtn',S.waitUntil?'disabled':'')}</div>
   <p class="note desk-only">한 단계를 모든 홈에 넣은 뒤 5분 기다리기를 눌러요.</p>
-  <div class="row actbar">${btn('wait','','5분 기다리기')}${btn('finish','','실험 마치고 색 관찰')}</div></section></div>`},
+  <div class="row actbar">${btn('wait','',S.waitUntil?'기다리는 중…':'5분 기다리기','',S.waitUntil?'disabled':'')}${btn('finish','','실험 마치고 색 관찰','',S.waitUntil?'disabled':'')}</div></section></div>`},
 
 ()=>{const ctlOk=S.levels[0]===0&&S.levels[1]===2;return `<div class="split"><div class="panel"><h1>색 변화 기록</h1>
   <p class="note">${S.run}번째 실험 결과예요. 홈을 누르면 분자 수준으로 볼 수 있어요.</p>
@@ -530,7 +532,7 @@ const A={
   wait(){
     if(S.block>3){S.msg='네 가지 시약을 모두 넣었어요. 실험을 마치고 색을 관찰하세요.';return render()}
     if(!stepDone(S.wells,S.block)){S.msg=`아직 모든 홈에 ${STEP_OBJ[S.block]} 2방울씩 넣지 않았어요.`;S.slips.push(S.msg);return render()}
-    S.block++;S.clock+=5;S.msg='';render();
+    S.waitUntil=Date.now()+WAIT_MS;S.msg='';render();tick();
   },
   finish(){
     if(S.block<4){S.msg=stepDone(S.wells,3)?'진단 반응물이 반응하도록 5분 기다리기를 누른 뒤 마치세요.':'아직 네 가지 시약을 모두 넣지 않았어요.';return render()}
@@ -540,7 +542,7 @@ const A={
   },
   inspect(i){S.inspect=i===''?null:+i;render()},
   rec(a){const[i,k]=parts(a);S.record[+i]=+k;render()},
-  retry(){Object.assign(S,{run:S.run+1,wells:[[],[],[],[]],block:0,clock:0,spoite:null,done:false,record:[null,null,null,null],inspect:null,lastWell:null});go(1)},
+  retry(){Object.assign(S,{run:S.run+1,wells:[[],[],[],[]],block:0,clock:0,spoite:null,done:false,record:[null,null,null,null],inspect:null,lastWell:null,waitUntil:0});go(1)},
   toJudge(){
     if(S.record.includes(null)){S.msg='네 홈의 색을 모두 기록하세요.';return render()}
     go(3);
@@ -579,6 +581,13 @@ const A={
   cancel(){S.confirm=false;render()},
 };
 
+// 기다리는 동안 타이머를 갱신하고, 끝나면 다음 단계로 넘어간다
+function tick(){
+  if(!S.waitUntil)return;
+  if(Date.now()>=S.waitUntil){S.waitUntil=0;S.block++;S.clock+=5;return render()}
+  if(S.stage===1)render();
+  setTimeout(tick,500);
+}
 function render(){
   document.getElementById('bars').innerHTML=STAGES.map((_,i)=>`<i class="${i<=S.stage?'on':''}"></i>`).join('');
   document.getElementById('stepnow').textContent=`${S.stage+1} / ${STAGES.length} ${STAGES[S.stage]}`;
@@ -620,7 +629,7 @@ document.addEventListener('input',e=>{
     document.getElementById('dayres').innerHTML=dayResult();save();
   }
 });
-render();
+render();tick();
 </script>
 </body>
 </html>
