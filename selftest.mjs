@@ -43,15 +43,16 @@ assert.equal(scoreConclusion(J,{p1:'pos',p2:'neg'},lv),20);
 assert.equal(scoreConclusion(J,{p1:'none',p2:'neg'},lv),15);
 assert.equal(scoreConclusion({p1:'비감염',p2:'비감염'},{p1:'pos',p2:'neg'},lv),10);
 
-// 학번별 사례는 고정되고, 네 조합이 모두 나온다
 assert.deepEqual(caseFor('30101'),caseFor(' 30101 '));
-const combos=new Set(Array.from({length:40},(_,i)=>{const c=truthOf(caseFor(30101+i));return `${c.p1}${c.p2}`}));
-assert.equal(combos.size,4);
+// 교과서 예시: 사람 1만 감염. 사람 3은 학번마다 달라진다
+for(let i=0;i<20;i++){const c=caseFor(30101+i);assert.equal(c.p1,true);assert.equal(c.p2,false)}
+assert.equal(new Set(Array.from({length:20},(_,i)=>caseFor(30101+i).p3)).size,2);
+assert.deepEqual(good.map(w=>evalWell(w,truthOf(caseFor('30101'))).level),[0,2,2,0]);
 // 넣으면 안 되는 곳은 막는다
 const W0=[[],[],[],[]];
 assert.equal(checkDrop(W0,0,'cap',0),'');
 assert.match(checkDrop(W0,0,'det',0),/아직 검출 시약을/);
-assert.match(checkDrop(W0,1,'p1',0),/홈 1에는 음성 표준 시료를/);
+assert.match(checkDrop(W0,1,'p1',0),/홈 1에는 감염병 음성 표준 시료를/);
 assert.equal(checkDrop(W0,1,'neg',0),'');
 assert.match(checkDrop([[{r:'cap',t:0},{r:'cap',t:0}],[],[],[]],0,'cap',0),/이미 2방울/);
 assert.match(checkDrop(W0,2,'cap',0),/포획 항체 넣는 단계는 끝났어요/);

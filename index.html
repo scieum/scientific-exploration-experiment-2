@@ -132,7 +132,8 @@ main>.panel{max-width:920px;width:100%;margin-inline:auto}
 .pdots i{display:inline-flex;gap:2px;align-items:center;font-style:normal}
 .pdots u{width:clamp(6px,1.6vw,8px);height:clamp(6px,1.6vw,8px);border-radius:50%;border:1.2px solid var(--line)}
 .pdots u.on{background:var(--c);border-color:var(--c)}
-.legend{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 12px;font-size:.82rem;color:var(--muted);max-width:none}
+.nowrap{white-space:nowrap}
+.legend{margin-top:10px;display:flex;flex-wrap:wrap;justify-content:center;gap:4px 12px;font-size:.82rem;color:var(--muted);max-width:none}
 .pill{justify-self:start;background:var(--accent-soft);border-radius:999px;padding:6px 14px;font-size:.9rem;max-width:none}
 .pill small{color:var(--muted);margin-right:6px;font-size:.82rem}
 .shelf{display:grid;gap:8px;grid-template-columns:repeat(4,minmax(0,1fr))}
@@ -164,11 +165,24 @@ details.cmp summary{cursor:pointer;font-weight:500;padding:4px 0}
 .res{font-weight:700}
 .res.pos{color:var(--react-text)}
 .res.neg{color:var(--good)}
+@media (min-width:960px){.narrow-word{display:none}}
+/* 휴대폰·태블릿 세로: 다음 단계 버튼은 화면 아래 고정 막대에 둔다 */
+@media (max-width:959px){
+  main:has(.actbar){padding-bottom:84px}
+  .actbar{position:fixed;left:0;right:0;bottom:0;z-index:3;flex-wrap:nowrap;background:var(--panel);border-top:1px solid var(--line);padding:12px max(16px,env(safe-area-inset-left,0px)) calc(12px + env(safe-area-inset-bottom,0px))}
+  .actbar>button{flex:1;min-height:50px;font-weight:700}
+  .actbar>.go-m{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+}
 @media (max-width:959px){.desk-only{display:none}
   .shelf{grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
   .bottle{padding:6px 2px;font-size:.66rem;min-height:0}.bottle svg{width:22px}.bottle[aria-pressed="true"]{transform:translateY(-3px)}
   .dropbtn{min-height:44px;font-size:.95rem}.bench.drop .plate{padding-top:clamp(32px,6dvh,60px)}}
-@media (max-width:719px){.shelfhead{display:none}}
+@media (max-width:719px){.rc{display:none}}
+@media (min-width:720px){.rcm{display:none}}
+@media (max-width:719px){.plabels b,.plabels br{display:none}
+  main{gap:8px}.panel{gap:8px;padding:10px}.split,.side{gap:8px}
+  .bench.drop .plate{padding-top:30px}.bench{padding:8px}
+  .bottle{padding:4px 2px}.dropbtn{min-height:42px}}
 /* PC·태블릿 가로: 화면 전체를 채운다 */
 @media (min-width:960px){
   .top,main{max-width:none;padding-inline:28px}
@@ -186,8 +200,8 @@ details.cmp summary{cursor:pointer;font-weight:500;padding:4px 0}
   .side>.note+.actbar,.side>.note:has(+.actbar){margin-top:auto}
   .side>.note:has(+.actbar)+.actbar{margin-top:0}
   .split>.panel>.bench{flex:1}
-  .bench.drop{--pw:min(860px,calc((100dvh - 360px)*1.7))}
-  .bench.inspect{--pw:min(560px,calc((100dvh - 520px)*1.6))}
+  .bench.drop{--pw:min(860px,calc((100dvh - 400px)*1.7))}
+  .bench.inspect{--pw:min(560px,max(220px,calc((100dvh - 600px)*1.8)))}
   .hero{justify-content:center;padding:56px!important}
   .hero h1{font-size:clamp(1.8rem,3vw,2.6rem)}
   .formcard{justify-content:center}
@@ -209,7 +223,7 @@ details.cmp summary{cursor:pointer;font-weight:500;padding:4px 0}
 /* 휴대폰: 한 화면에 들어오도록 줄인다 */
 @media (max-width:719px){
   .legend,.wide-only,.shelf-title{display:none}
-  .flow{gap:3px}.flow i{display:none}.flow b{padding:2px 6px;font-size:.74rem}
+  .flow{gap:3px;flex-wrap:nowrap}.flow i{display:none}.flow b{padding:2px 5px;font-size:.68rem;white-space:nowrap}
   .timer{width:44px;height:44px}.timer span{width:36px;height:36px;font-size:.78rem}
   .pdots>span{gap:1px 3px}.pdots i{gap:1px}.pdots u{width:5px;height:5px;border-width:1px}
   .pill{font-size:.8rem;padding:4px 10px}
@@ -217,7 +231,9 @@ details.cmp summary{cursor:pointer;font-weight:500;padding:4px 0}
   #chartd svg{max-height:30dvh}
   .tip{padding:6px 10px;font-size:.88rem}
   .obs textarea{min-height:52px}
-  td .chip{min-height:34px;padding:3px 7px;font-size:.8rem}
+  td .chip{min-height:32px;padding:2px 5px;font-size:.72rem}
+  table.rec td .row{gap:3px;flex-wrap:nowrap}
+  table.rec th,table.rec td{padding:4px}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 @media print{
@@ -246,12 +262,13 @@ const QUESTIONS=[
   '단백질을 이용한 진단 기술과 핵산을 이용한 진단 기술의 장단점을 비교하고, 감염 초기가 의심되는 환자에게 알맞은 기술을 근거와 함께 고르시오. 또 이 기술들이 사회 문제 해결에 어떻게 유용한지 쓰시오.',
 ];
 const SAMPLES=['neg','pos','p1','p2']; // 홈 1~4에 넣어야 하는 시료
-const NAMES={cap:'포획 항체',neg:'음성 표준 시료',pos:'양성 표준 시료',p1:'사람 1의 시료',p2:'사람 2의 시료',det:'검출 시약',sub:'진단 반응물'};
+const NAMES={cap:'포획 항체',neg:'감염병 음성 표준 시료',pos:'감염병 양성 표준 시료',p1:'사람 1의 시료',p2:'사람 2의 시료',det:'검출 시약',sub:'진단 반응물'};
 const COLORS=['무색','연한 붉은색','붉은색'];
 
 function hash(s){let h=2166136261;for(const c of String(s)){h^=c.codePointAt(0);h=Math.imul(h,16777619)}return h>>>0}
 // 같은 학번은 늘 같은 환자 결과를 받는다
-function caseFor(id){const h=hash(String(id).trim());return{p1:!!(h&1),p2:!!(h&2),p3:!!(h&4)}}
+// 교과서 예시처럼 사람 1만 감염. 핵산 진단의 사람 3만 학번마다 달라진다
+function caseFor(id){const h=hash(String(id).trim());return{p1:true,p2:false,p3:!!(h&4)}}
 function truthOf(c){return{neg:false,pos:true,p1:c.p1,p2:c.p2}}
 
 // adds: [{r:시약, t:몇 번째 5분 구간}]. 앞 단계 물질이 이미 붙은 뒤에 넣어야 결합한다.
@@ -355,11 +372,12 @@ function plate(mode){
   const dots=drop?`<div class="pdots">${S.wells.map((w,i)=>`<span role="img" aria-label="홈 ${i+1}: ${GROUPS.map(([rs,n])=>n+' '+w.filter(a=>rs.includes(a.r)).length+'방울').join(', ')}">${GROUPS.map(([rs,,c])=>{const n=w.filter(a=>rs.includes(a.r)).length;return `<i style="--c:${c}"><u class="${n>0?'on':''}"></u><u class="${n>1?'on':''}"></u>${n>2?'+'+(n-2):''}</i>`}).join('')}</span>`).join('')}</div>
   <p class="legend">${GROUPS.map(([,n,c])=>`<span><span class="swatch" style="background:${c}"></span>${n}</span>`).join('')}</p>`:'';
   return `<div class="bench ${mode}"><div class="plate" role="group" aria-label="홈판">${wells}</div>
-  <div class="plabels"><span>음성 표준</span><span>양성 표준</span><span>사람 1</span><span>사람 2</span></div>${dots}</div>`;
+  <div class="plabels">${SAMPLES.map((s,i)=>`<span><b>홈 ${i+1}</b><br>${SHORT[s]}</span>`).join('')}</div>${dots}</div>`;
 }
 const todo=()=>S.waitUntil?`⏳ 반응을 기다리는 중이에요. ${Math.ceil((S.waitUntil-Date.now())/1000)}초 남았어요. (실제로는 5분)`:S.block>3?'④까지 모두 넣었어요. <b>실험을 마치고 색 관찰하기</b>를 누르세요.'
   :stepDone(S.wells,S.block)?`모든 홈에 ${STEP_OBJ[S.block]} 넣었어요. <b>5분 기다리기</b>를 누르세요.`
-  :`${S.block===1?'홈마다 아래에 적힌 <b>시료</b>를':`모든 홈에 <b>${STEP_OBJ[S.block]}</b>`} 2방울씩 넣어요.<span class="desk-only"> 시약병 집기 → 홈 고르기 → <b>한 방울 떨어뜨리기</b></span>`;
+  :S.block===1?'홈 아래 이름과 같은 <b>시료</b>를 2방울씩 넣어요.<span class="desk-only"> <span class="nowrap">홈 1 ← 음성 표준</span> · <span class="nowrap">홈 2 ← 양성 표준</span> · <span class="nowrap">홈 3 ← 사람 1</span> · <span class="nowrap">홈 4 ← 사람 2</span></span>'
+  :`모든 홈에 <b>${STEP_OBJ[S.block]}</b> 2방울씩 넣어요.<span class="desk-only"> 시약병 집기 → 홈 고르기 → <b>한 방울 떨어뜨리기</b></span>`;
 const flow=step=>`<div class="flow">${['포획 항체','진단 시료','검출 시약','진단 반응물'].map((t,k)=>`<b class="${k<step?'done':k===step?'now':''}">${'①②③④'[k]} ${t}</b>`).join('<i>5분 뒤</i>')}</div>`;
 
 function molecule(i){
@@ -409,7 +427,7 @@ const views=[
   <section class="panel formcard"><h2>실험자 정보</h2>
   <label>학번 (모둠 활동이면 모둠 번호)<input id="f-id" data-bind="id" value="${esc(S.id)}" autocomplete="off"></label>
   <label>이름<input id="f-name" data-bind="name" value="${esc(S.name)}" autocomplete="off"></label>
-  <p class="note">학번마다 환자의 결과가 달라요. 쓴 내용은 이 기기에 자동으로 저장되고 평가 자료로 쓰여요.</p>
+  <p class="note">쓴 내용은 이 기기에 자동으로 저장되고 평가 자료로 쓰여요.</p>
   ${msg()}<div class="row">${btn('start','','실험 시작하기','go')}</div></section></div>`,
 
 ()=>{const held=S.spoite&&S.lastWell!==null?S.wells[S.lastWell].filter(a=>a.r===S.spoite).length:0;return `<div class="split"><section class="panel">
@@ -418,16 +436,18 @@ const views=[
   ${plate('drop')}
   ${msg()}</section>
   <section class="side"><div class="panel"><div class="shelfhead"><h2 class="shelf-title">시약 선반</h2>
-  <p class="pill" aria-live="polite"><small>집은 스포이트</small>${S.spoite?esc(NAMES[S.spoite])+(S.lastWell!==null?` · 홈 ${S.lastWell+1}에 ${held}/2방울`:' · 넣을 홈을 고르세요'):'시약병을 눌러 집으세요'}</p></div>
+  <p class="pill" aria-live="polite"><small>집은 스포이트</small>${S.spoite?esc(SHORT[S.spoite])+(S.lastWell!==null?` · 홈 ${S.lastWell+1}에 ${held}/2방울`:' · 넣을 홈을 고르세요'):'시약병을 눌러 집으세요'}</p></div>
   <div class="shelf" role="group" aria-label="시약 선반">${Object.keys(NAMES).map(k=>toggle('spoite',k,bottleSvg(RC[k])+'<span>'+SHORT[k]+'</span>',S.spoite===k,'bottle',`aria-label="${NAMES[k]}"`)).join('')}</div>
   ${btn('drop','',`💧 ${S.lastWell!==null?`홈 ${S.lastWell+1}에 `:''}한 방울 떨어뜨리기`,'go dropbtn',S.waitUntil?'disabled':'')}</div>
   <p class="note desk-only">한 단계를 모든 홈에 넣은 뒤 5분 기다리기를 눌러요.</p>
-  <div class="row actbar">${btn('wait','',S.waitUntil?'기다리는 중…':'5분 기다리기','',S.waitUntil?'disabled':'')}${btn('finish','','실험 마치고 색 관찰','',S.waitUntil?'disabled':'')}</div></section></div>`},
+  <div class="row actbar">${btn('wait','',S.waitUntil?'기다리는 중…':'5분 기다리기','',S.waitUntil?'disabled':'')}${btn('finish','','<span class="desk-only">실험 마치고 </span>색 관찰<span class="narrow-word">하기</span>','go-m',S.waitUntil?'disabled':'')}</div></section></div>`},
 
 ()=>{const ctlOk=S.levels[0]===0&&S.levels[1]===2;return `<div class="split"><div class="panel"><h1>색 변화 기록</h1>
   <p class="note">${S.run}번째 실험 결과예요. 홈을 누르면 분자 수준으로 볼 수 있어요.</p>
   ${plate('inspect')}
-  <div class="tw"><table><tr><th class="l">홈 (시료)</th><th>관찰한 색</th></tr>${SAMPLES.map((s,i)=>`<tr><td class="l"><b>${i+1}</b> <span class="note">${SHORT[s]}</span></td><td><div class="row" style="justify-content:center">${COLORS.map((c,k)=>toggle('rec',`${i}:${k}`,c,S.record[i]===k,'chip')).join('')}</div></td></tr>`).join('')}</table></div>
+  <div class="tw"><table class="rec"><tr><th>홈</th><th class="rc">포획 항체</th><th class="rc">진단 시료</th><th class="rc">검출 시약</th><th class="rc">진단 반응물</th><th class="rcm">넣은 방울<br><small class="note">항체·시료<br>검출·반응</small></th><th>색깔</th></tr>${SAMPLES.map((s,i)=>{const w=S.wells[i],n=rs=>w.filter(a=>rs.includes(a.r)).length;
+    const smp=SAMPLES.filter(x=>n([x])).map(x=>`${NAMES[x]} ${n([x])}방울`).join('<br>')||'0방울';
+    return `<tr><td>${i+1}</td><td class="rc">${n(['cap'])}방울</td><td class="rc">${smp}</td><td class="rc">${n(['det'])}방울</td><td class="rc">${n(['sub'])}방울</td><td class="rcm">${[n(['cap']),n(SAMPLES),n(['det']),n(['sub'])].join(' · ')}</td><td><div class="row" style="justify-content:center">${COLORS.map((c,k)=>toggle('rec',`${i}:${k}`,c,S.record[i]===k,'chip')).join('')}</div></td></tr>`}).join('')}</table></div>
   ${msg()}</div>
   <section class="side">${S.inspect!==null?molecule(S.inspect):'<div class="panel side-ph"><h2>분자 수준으로 보기</h2><p class="note">홈판에서 홈을 누르면 그 홈에서 일어난 결합을 볼 수 있어요.</p></div>'}
   ${ctlOk?'':'<p class="note">대조군이 예상과 달라 보이면 다시 실험할 수 있어요. 횟수와 오류는 기록돼요.</p>'}
