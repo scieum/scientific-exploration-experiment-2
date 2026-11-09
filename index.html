@@ -128,12 +128,14 @@ main>.panel{max-width:920px;width:100%;margin-inline:auto}
 .well.target{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent),inset 0 3px 6px rgb(20 24 40/.14)}
 .dropper{position:absolute;left:50%;bottom:calc(100% - 8px);width:clamp(18px,32%,40px);transform:translateX(-50%);pointer-events:none}
 .pdots{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;max-width:var(--pw);width:100%;margin-inline:auto}
-.pdots>span{display:flex;flex-wrap:wrap;justify-content:center;gap:2px 6px;font-size:.7rem;color:var(--muted)}
-.pdots i{display:inline-flex;gap:2px;align-items:center;font-style:normal}
-.pdots u{width:clamp(6px,1.6vw,8px);height:clamp(6px,1.6vw,8px);border-radius:50%;border:1.2px solid var(--line)}
+.pdots>span{display:flex;flex-wrap:wrap;justify-content:center;gap:4px;font-size:.7rem;color:var(--muted)}
+.pdots i{display:inline-flex;gap:3px;align-items:center;font-style:normal;padding:3px 5px;border-radius:999px;background:var(--panel);box-shadow:inset 0 0 0 1px var(--line)}
+.pdots i.full{background:color-mix(in srgb,var(--c) 16%,var(--panel));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 45%,transparent)}
+.pdots u{width:8px;height:8px;border-radius:50%;border:1.5px solid var(--line);background:var(--panel)}
 .pdots u.on{background:var(--c);border-color:var(--c)}
 .nowrap{white-space:nowrap}
-.legend{margin-top:10px;display:flex;flex-wrap:wrap;justify-content:center;gap:4px 12px;font-size:.82rem;color:var(--muted);max-width:none}
+.legend{margin-top:12px;display:flex;flex-wrap:wrap;justify-content:center;gap:8px 20px;font-size:1rem;font-weight:500;color:var(--ink);max-width:none}
+.legend .swatch{width:14px;height:14px;margin-right:6px;vertical-align:-2px;border:0}
 .pill{justify-self:start;background:var(--accent-soft);border-radius:999px;padding:6px 14px;font-size:.9rem;max-width:none}
 .pill small{color:var(--muted);margin-right:6px;font-size:.82rem}
 .shelf{display:grid;gap:8px;grid-template-columns:repeat(4,minmax(0,1fr))}
@@ -203,6 +205,8 @@ table.rec td .row{gap:4px;flex-wrap:nowrap}
 .steps4 b{font-size:1.05rem}
 .steps4 span{color:var(--muted);font-size:.9rem}
 @media (min-width:960px){.mob-only{display:none!important}main>.landing{flex:1}}
+@media (min-width:960px) and (max-width:1180px){main .flow i{display:none}}
+@media (min-width:960px) and (max-height:760px){main .bench.drop{--pw:min(860px,calc((100dvh - 440px)*1.7))}main .legend{font-size:.9rem;margin-top:6px}}
 @media (min-width:960px) and (max-height:760px){main .side .shelf{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}main .side .bottle{padding:8px 4px;gap:6px}}
 @media (max-width:719px) and (min-height:780px){main .landing{gap:32px;padding-top:16px}main .hero-top{gap:14px}main .steps4{gap:12px}main .steps4 article{grid-template-columns:88px 1fr;column-gap:14px;padding:16px 14px}main .steps4 .vis{height:58px}}
 @media (max-width:959px){main .bench.drop{--pw:min(520px,50dvh)}}
@@ -326,7 +330,7 @@ table.rec td .row{gap:4px;flex-wrap:nowrap}
   .legend,.wide-only,.shelf-title{display:none}
   .flow{gap:3px;flex-wrap:nowrap}.flow i{display:none}.flow b{padding:2px 5px;font-size:.68rem;white-space:nowrap}
   .timer{width:44px;height:44px}.timer span{width:36px;height:36px;font-size:.78rem}
-  .pdots>span{gap:1px 3px}.pdots i{gap:1px}.pdots u{width:5px;height:5px;border-width:1px}
+  .pdots>span{gap:2px}.pdots i{gap:2px;padding:2px 3px}.pdots u{width:6px;height:6px;border-width:1px}
   .pill{font-size:.8rem;padding:4px 10px}
   .vs>div{padding:6px}.vs .res{font-size:1.1rem}
   #chartd svg{max-height:30dvh}
@@ -497,7 +501,7 @@ function plate(mode){
     const label=`홈 ${i+1}, ${S.done?COLORS[S.levels[i]]:w.length+'방울'}`;
     return `<div class="wcell"><button class="${cls}" style="--c:${RC[S.spoite]||'var(--accent)'}" data-act="${mode==='inspect'?'inspect':'pick'}" data-arg="${i}" aria-label="${label}${drop&&S.lastWell===i?', 고른 홈':''}" ${drop?`aria-pressed="${S.lastWell===i}"`:''} ${mode==='view'?'disabled':''}><span class="liq" style="--r:${r(i)}"></span><span class="wn">${i+1}</span></button>${holding&&S.lastWell===i?dropperSvg(RC[S.spoite]):''}</div>`;
   }).join('');
-  const dots=drop?`<div class="pdots">${S.wells.map((w,i)=>`<span role="img" aria-label="홈 ${i+1}: ${GROUPS.map(([rs,n])=>n+' '+w.filter(a=>rs.includes(a.r)).length+'방울').join(', ')}">${GROUPS.map(([rs,,c])=>{const n=w.filter(a=>rs.includes(a.r)).length;return `<i style="--c:${c}"><u class="${n>0?'on':''}"></u><u class="${n>1?'on':''}"></u>${n>2?'+'+(n-2):''}</i>`}).join('')}</span>`).join('')}</div>
+  const dots=drop?`<div class="pdots">${S.wells.map((w,i)=>`<span role="img" aria-label="홈 ${i+1}: ${GROUPS.map(([rs,n])=>n+' '+w.filter(a=>rs.includes(a.r)).length+'방울').join(', ')}">${GROUPS.map(([rs,,c])=>{const n=w.filter(a=>rs.includes(a.r)).length;return `<i class="${n>=2?'full':''}" style="--c:${c}"><u class="${n>0?'on':''}"></u><u class="${n>1?'on':''}"></u>${n>2?'+'+(n-2):''}</i>`}).join('')}</span>`).join('')}</div>
   <p class="legend">${GROUPS.map(([,n,c])=>`<span><span class="swatch" style="background:${c}"></span>${n}</span>`).join('')}</p>`:'';
   return `<div class="bench ${mode}"><div class="plate" role="group" aria-label="홈판">${wells}</div>
   <div class="plabels">${SAMPLES.map((s,i)=>`<span><b>홈 ${i+1}</b><br>${SHORT[s]}</span>`).join('')}</div>${dots}</div>`;
