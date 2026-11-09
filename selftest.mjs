@@ -2,7 +2,7 @@
 import {readFileSync} from 'node:fs';
 import assert from 'node:assert/strict';
 
-const html=readFileSync(new URL('./감염병_진단_시뮬레이션.html',import.meta.url),'utf8');
+const html=readFileSync(new URL('./index.html',import.meta.url),'utf8');
 const code=html.match(/<script id="logic">([\s\S]*?)<\/script>/)[1];
 const {evalWell,auditRun,scoreProcess,scoreRecord,scoreConclusion,caseFor,truthOf,SAMPLES}=
   new Function(code+';return{evalWell,auditRun,scoreProcess,scoreRecord,scoreConclusion,caseFor,truthOf,SAMPLES}')();
