@@ -31,10 +31,10 @@ assert.equal(evalWell(seq(['cap','pos','det','sub']).slice(1),T).level,1);
 assert.deepEqual(auditRun(SAMPLES.map(s=>[['cap',0],[s,2],['det',3],['sub',5]].flatMap(([r,t])=>[{r,t},{r,t}]))),[]);
 
 // 채점표
-assert.equal(scoreProcess(0,0),30);
-assert.equal(scoreProcess(1,0),20);
-assert.equal(scoreProcess(0,2),20);
-assert.equal(scoreProcess(0,3),10);
+assert.equal(scoreProcess(0),30);
+assert.equal(scoreProcess(1),20);
+assert.equal(scoreProcess(2),20);
+assert.equal(scoreProcess(3),10);
 for(const [rec,want] of [[[0,2,2,0],20],[[0,2,2,2],15],[[0,2,0,2],10],[[2,2,0,2],5],[[2,0,0,2],0]])
   assert.equal(scoreRecord(rec,[0,2,2,0]),want);
 assert.equal(scoreRecord([null,null,null,null],[0,2,2,0]),0);
