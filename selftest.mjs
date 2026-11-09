@@ -4,8 +4,8 @@ import assert from 'node:assert/strict';
 
 const html=readFileSync(new URL('./index.html',import.meta.url),'utf8');
 const code=html.match(/<script id="logic">([\s\S]*?)<\/script>/)[1];
-const {evalWell,auditRun,scoreProcess,scoreRecord,scoreConclusion,caseFor,truthOf,SAMPLES,checkDrop,stepDone,QUIZ}=
-  new Function(code+';return{evalWell,auditRun,scoreProcess,scoreRecord,scoreConclusion,caseFor,truthOf,SAMPLES,checkDrop,stepDone,QUIZ}')();
+const {evalWell,auditRun,scoreProcess,scoreRecord,scoreConclusion,caseFor,truthOf,SAMPLES,checkDrop,stepDone,QUIZ,diffRange}=
+  new Function(code+';return{evalWell,auditRun,scoreProcess,scoreRecord,scoreConclusion,caseFor,truthOf,SAMPLES,checkDrop,stepDone,QUIZ,diffRange}')();
 
 const T={neg:false,pos:true,p1:true,p2:false};
 const seq=(rs,drops=2)=>rs.flatMap((r,t)=>Array.from({length:drops},()=>({r,t})));
@@ -65,4 +65,6 @@ assert.deepEqual(good.map(w=>evalWell(w,T).level),[0,2,2,0]);
 const all=Object.values(QUIZ).flatMap(z=>z.items);
 for(const it of all){assert.equal(it.o.length,4,it.q);assert.ok(it.a>=0&&it.a<4,it.q);assert.ok(it.e&&it.q)}
 assert.ok(new Set(all.map(it=>it.a)).size>=3);
+// 감염 초기 두 검사의 결과가 다른 날: 수업용 모형값에서 1~2일
+assert.deepEqual(diffRange([.5,2,3.5,5,6.5,7,6.5,5.5],4.5,1.5),[1,2]);
 console.log('ok');

@@ -441,6 +441,8 @@ function checkDrop(wells,step,r,i){
 }
 // 지금 단계의 시약이 모든 홈에 2방울씩 들어갔는가
 function stepDone(wells,step){return step<=3&&wells.every((w,i)=>w.filter(a=>a.r===(step===1?SAMPLES[i]:['cap','','det','sub'][step])).length>=2)}
+// 두 검사의 판정이 서로 다른 날의 처음과 끝 [from,to]
+function diffRange(amount,limProtein,limNA){const d=amount.map((a,i)=>(a>limProtein)!==(a>limNA)?i:-1).filter(i=>i>=0);return[Math.min(...d),Math.max(...d)]}
 // 채점 기준 표의 칸을 그대로 옮긴 참고 점수. 최종 점수는 교사가 정한다.
 function scoreProcess(errors){return errors?(errors>=3?10:20):30}
 function scoreRecord(rec,actual){return rec.filter((r,i)=>r===actual[i]).length*5}
@@ -466,7 +468,7 @@ const DAY_AMOUNT=[.5,2,3.5,5,6.5,7,6.5,5.5],LIM_PROTEIN=4.5,LIM_NA=1.5; // 수�
 
 const fresh=restarts=>({stage:0,id:'',name:'',run:1,wells:[[],[],[],[]],block:0,clock:0,spoite:null,
   drip:null,done:false,levels:[],bounds:[],runErrors:[],record:[null,null,null,null],inspect:null,
-  jp:'p1',ct:'g',q:0,pcrNope:null,lastWell:null,elisa:false,elisaSeen:false,slips:[],nope:null,waitUntil:0,obs:{from:'',to:''},quiz:null,passed:{},qlog:{},judge:{},basis:{},pcrDone:[],pcrWrong:0,pcrPick:null,cycles:0,pcrJudge:{},day:1,answers:['','',''],
+  jp:'p1',ct:'g',q:0,pcrNope:null,lastWell:null,elisa:false,elisaSeen:false,slips:[],nope:null,waitUntil:0,obs:{from:'',to:''},obsOk:null,obsTry:0,quiz:null,passed:{},qlog:{},judge:{},basis:{},pcrDone:[],pcrWrong:0,pcrPick:null,cycles:0,pcrJudge:{},day:1,answers:['','',''],
   msg:'',confirm:false,restarts,finished:''});
 let S=fresh(0);
 try{const saved=JSON.parse(localStorage.getItem(KEY));if(saved)S=Object.assign(fresh(0),saved)}catch{}
@@ -613,8 +615,9 @@ const views=[
   <tr><td class="l">결과 확인까지</td><td>보통 수십 분 이내</td><td>보통 수 시간</td></tr>
   <tr><td class="l">필요한 장비</td><td>홈판 또는 간이 키트</td><td>중합효소연쇄반응 장치</td></tr></table></div></details>
   <div class="panel obs"><h2>관찰 기록</h2><p>두 검사의 결과가 서로 다른 날</p>
-  <p>감염 후<input type="number" min="0" max="7" inputmode="numeric" aria-label="시작일" data-bind="obs.from" value="${esc(S.obs.from)}">일부터<input type="number" min="0" max="7" inputmode="numeric" aria-label="마지막 날" data-bind="obs.to" value="${esc(S.obs.to)}">일까지</p></div>
-  <div class="row actbar">${btn('toThink','','활동지 안내로','go')}</div></section></div>`,
+  <p>감염 후<input type="number" min="0" max="7" inputmode="numeric" aria-label="시작일" data-bind="obs.from" value="${esc(S.obs.from)}">일부터<input type="number" min="0" max="7" inputmode="numeric" aria-label="마지막 날" data-bind="obs.to" value="${esc(S.obs.to)}">일까지 ${btn('obsCheck','','확인','small')}</p>
+  ${S.obsOk?`<p class="qfb ok"><b>✓ 맞아요!</b> 감염 ${diffRange(DAY_AMOUNT,LIM_PROTEIN,LIM_NA).join('~')}일에는 병원체의 양이 핵산 검사의 검출 한계는 넘지만 단백질 검사의 검출 한계에는 못 미쳐요.</p>`:S.obsOk===false?'<p class="qfb no" role="alert"><b>다시 그래프를 확인해 보세요.</b> 날짜를 옮기며 두 검사의 결과가 다른 날을 찾아요.</p>':''}</div>
+  ${msg()}<div class="row actbar">${btn('toThink','','활동지 안내로','go')}</div></section></div>`,
 
 ()=>`<div class="panel"><h1>활동지에 정리해요</h1>
   <p>시뮬레이션의 확인 문제를 모두 맞혔어요. 아래 질문은 <b>종이 활동지</b>에 자신의 말로 써요.</p>
@@ -672,7 +675,7 @@ function report(){
   <h2>결론</h2>
   ${[['p1','사람 1'],['p2','사람 2']].map(([p,n])=>`<p><b>${n}: ${esc(S.judge[p])}</b> (${{pos:'양성 대조군과 같음',neg:'음성 대조군과 같음',none:'대조군과 비교하지 않음'}[S.basis[p]]})</p>`).join('')}
   <p>핵산 진단 판정: 사람 3 ${esc(S.pcrJudge.p3)}, 사람 4 ${esc(S.pcrJudge.p4)}</p>
-  <p>두 검사의 결과가 다른 날: 감염 후 ${esc(S.obs.from)||'□'}일부터 ${esc(S.obs.to)||'□'}일까지</p>
+  <p>두 검사의 결과가 다른 날: 감염 후 ${esc(S.obs.from)||'□'}일부터 ${esc(S.obs.to)||'□'}일까지 (다시 쓴 횟수 ${S.obsTry}회)</p>
   <h2>확인 문제</h2>
   <div class="tw"><table><tr><th class="l">단계</th><th>문항</th><th>한 번에 맞힘</th><th>틀린 횟수</th></tr>${Object.entries(QUIZ).map(([k,qz])=>{const tries=qz.items.map((_,i)=>S.qlog[k+i]||0);return `<tr><td class="l">${qz.title.replace(' 확인 문제','').replace(/^[①②③④] /,'단백질 · ')}</td><td>${qz.items.length}</td><td>${tries.filter(t=>!t).length}</td><td>${tries.reduce((a,b)=>a+b,0)}</td></tr>`}).join('')}</table></div>
   <h2>활동지 서술 문항</h2>
@@ -768,7 +771,8 @@ const A={
     if(gate('pcr','toCompare'))return;
     go(5);
   },
-  toThink(){if(gate('compare','toThink'))return;go(6)},
+  obsCheck(){const [a,b]=diffRange(DAY_AMOUNT,LIM_PROTEIN,LIM_NA);S.obsOk=+S.obs.from===a&&+S.obs.to===b&&S.obs.from!==''&&S.obs.to!=='';if(!S.obsOk)S.obsTry++;S.msg='';render()},
+  toThink(){if(!S.obsOk){S.msg='관찰 기록에 결과가 다른 날을 쓰고 [확인]을 눌러 맞혀야 넘어갈 수 있어요.';return render()}if(gate('compare','toThink'))return;go(6)},
   // 확인 문제: 고르기 → 확인 → (틀리면 다시 고르기) → 다음
   qpick(k){if(S.quiz.ok||S.quiz.tried.includes(+k))return;S.quiz.pick=+k;render()},
   qcheck(){const z=S.quiz,it=QUIZ[z.key].items[z.i];if(z.pick===null)return;
@@ -825,7 +829,7 @@ document.addEventListener('input',e=>{
   const t=e.target;
   if(t.dataset.bind){
     const path=t.dataset.bind.split('.'),k=path.pop();
-    path.reduce((o,p)=>o[p],S)[k]=t.value;save();
+    path.reduce((o,p)=>o[p],S)[k]=t.value;if(path[0]==='obs')S.obsOk=null;save();
   }
   if(t.dataset.range==='cycles'){
     const c=caseFor(S.id);S.cycles=+t.value;
