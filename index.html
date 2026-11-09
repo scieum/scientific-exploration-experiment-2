@@ -161,6 +161,14 @@ details.cmp summary{cursor:pointer;font-weight:500;padding:4px 0}
 @media (max-width:959px){.sheet{position:fixed;left:8px;right:8px;bottom:8px;max-height:72dvh;overflow:auto;z-index:5;box-shadow:0 8px 32px rgb(0 0 0/.25)}.sheetclose{display:inline-flex;justify-self:end}.side-ph{display:none}}
 .qnav{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .qbox textarea{min-height:min(240px,32dvh)}
+.howto{margin:0;padding:0;list-style:none;counter-reset:h;display:grid;gap:10px}
+.howto li{counter-increment:h;display:grid;grid-template-columns:32px 1fr;column-gap:12px;align-items:start}
+.howto li::before{content:counter(h);grid-row:span 2;width:32px;height:32px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-weight:700}
+.howto span{color:var(--muted);font-size:.92rem}
+.intro .note{font-size:.85rem}
+@media (max-width:719px){.side>.intro{display:none}.howto{gap:6px}}
+@media (max-width:959px){.howto.small span{display:none}}
+.howto.small li{grid-template-columns:28px 1fr}.howto.small li::before{width:28px;height:28px;font-size:.85rem}
 .teacher{display:none}
 .res{font-weight:700}
 .res.pos{color:var(--react-text)}
@@ -196,6 +204,8 @@ details.cmp summary{cursor:pointer;font-weight:500;padding:4px 0}
   .side>.panel{border:0;padding:0;border-radius:0;background:none}
   .side>.actbar{margin-top:auto}
   .side>.actbar>button,.split>.panel>.actbar>button{flex:1}
+  .hero{justify-content:center;padding:48px!important;gap:18px!important}
+  .hero h1{font-size:clamp(1.8rem,3vw,2.6rem)}
   .split>.panel>.actbar{margin-top:auto}
   .side>.note+.actbar,.side>.note:has(+.actbar){margin-top:auto}
   .side>.note:has(+.actbar)+.actbar{margin-top:0}
@@ -323,8 +333,8 @@ function scoreConclusion(judge,basis,levels){
 </script>
 
 <script>
-const KEY='dx-sim-v3'; // v3: 시작(로그인) 화면 삭제로 단계 번호가 바뀜
-const STAGES=['단백질 진단','결과 기록','감염 판정','핵산 진단','기술 비교','생각해 보기','결과지'];
+const KEY='dx-sim-v4'; // v4: 소개 화면 추가로 단계 번호가 바뀜
+const STAGES=['소개','단백질 진단','결과 기록','감염 판정','핵산 진단','기술 비교','생각해 보기','결과지'];
 const PCR_STEPS=[
   '검사 대상자(사람 3과 4)로부터 시료를 채취한다.',
   '시료에서 핵산을 추출한다.',
@@ -417,6 +427,21 @@ function dayChart(day){
 }
 
 const views=[
+()=>`<div class="split"><section class="panel hero">
+  <p class="note">감염병 진단 모의 실험</p>
+  <h1>두 사람은 감염되었을까요?</h1>
+  <p>발열과 기침 증상이 있는 사람 1, 2의 시료가 검사실에 도착했어요. 항원–항체 반응을 이용한 <b>단백질 진단</b>으로 감염 여부를 판정하고, <b>핵산 진단</b>과 비교해 두 기술의 차이를 찾아보세요.</p>
+  <ol class="howto">
+    <li><b>단백질 진단</b><span>홈판에 시약 4가지를 차례로 넣고 색 변화를 관찰해요.</span></li>
+    <li><b>판정하기</b><span>대조군과 비교해 사람 1, 2의 감염 여부를 판정해요.</span></li>
+    <li><b>핵산 진단과 비교</b><span>핵산을 증폭해 보고, 감염 초기에 두 검사의 결과가 어떻게 다른지 알아봐요.</span></li>
+    <li><b>정리하기</b><span>질문에 답하고 결과지를 만들어 제출해요.</span></li>
+  </ol></section>
+  <section class="side"><div class="panel intro"><h2>이렇게 조작해요</h2>
+  <ol class="howto small"><li><b>시약병 집기</b><span>선반에서 넣을 시약을 눌러요.</span></li><li><b>홈 고르기</b><span>홈판에서 넣을 홈을 눌러요.</span></li><li><b>💧 한 방울 떨어뜨리기</b><span>누를 때마다 한 방울씩 들어가요. 홈마다 2방울이에요.</span></li></ol>
+  <p class="note">잘못된 홈이나 차례가 아닌 시약은 들어가지 않고 ✕와 경고가 떠요. 잘못된 조작은 결과지에 기록돼요.</p>
+  <p class="note">실제 시약과 병원체를 쓰지 않아요. 5분 기다리기는 10초로 줄였어요. 쓴 내용은 이 기기에 자동 저장돼요.</p></div>
+  <div class="row actbar">${btn('go','1','실험 시작하기','go go-m')}</div></section></div>`,
 ()=>{const held=S.spoite&&S.lastWell!==null?S.wells[S.lastWell].filter(a=>a.r===S.spoite).length:0;return `<div class="split"><section class="panel">
   <div class="head"><div class="timer" style="--p:${Math.min((S.clock+5*waitFrac())/20,1)}"><span class="num">${Math.floor(S.clock+5*waitFrac())}분</span></div><h1>단백질을 이용한 진단</h1></div>${flow(Math.min(S.block,3))}
   <p class="tip" aria-live="polite"><b>지금 할 일</b> ${todo()}</p>
@@ -473,7 +498,7 @@ const views=[
   <div class="panel obs"><h2>관찰 기록</h2><p>두 검사의 결과가 서로 다른 날</p>
   <p>감염 후<input type="number" min="0" max="7" inputmode="numeric" aria-label="시작일" data-bind="obs.from" value="${esc(S.obs.from)}">일부터<input type="number" min="0" max="7" inputmode="numeric" aria-label="마지막 날" data-bind="obs.to" value="${esc(S.obs.to)}">일까지</p>
   <label>그렇게 생각한 까닭<textarea data-bind="obs.why" placeholder="병원체의 양과 검출 한계를 이용해 써 보세요.">${esc(S.obs.why)}</textarea></label></div>
-  <div class="row actbar">${btn('go','5','생각해 보기','go')}</div></section></div>`,
+  <div class="row actbar">${btn('go','6','생각해 보기','go')}</div></section></div>`,
 
 ()=>{const i=S.q,last=i===QUESTIONS.length-1;return `<div class="thinkgrid"><nav class="qlist desk-only" aria-label="문항">${QUESTIONS.map((_,k)=>toggle('qgo',k,`문항 ${k+1}${S.answers[k].trim()?' ✓':''}`,k===i)).join('')}<p class="note">자동 저장돼요</p></nav><div class="panel qbox"><h1>생각해 보기 <span class="note">${i+1} / ${QUESTIONS.length}</span></h1>
   <label>${i+1}. ${esc(QUESTIONS[i])}<textarea id="ans-${i}" data-bind="answers.${i}">${esc(S.answers[i])}</textarea></label>
@@ -544,14 +569,14 @@ const A={
     if(S.block<4){S.msg=stepDone(S.wells,3)?'진단 반응물이 반응하도록 5분 기다리기를 누른 뒤 마치세요.':'아직 네 가지 시약을 모두 넣지 않았어요.';return render()}
     const t=truth(),res=S.wells.map(w=>evalWell(w,t));
     S.levels=res.map(r=>r.level);S.bounds=res.map(r=>r.bound);
-    S.runErrors.push(auditRun(S.wells));S.done=true;go(1);
+    S.runErrors.push(auditRun(S.wells));S.done=true;go(2);
   },
   inspect(i){S.inspect=i===''?null:+i;render()},
   rec(a){const[i,k]=parts(a);S.record[+i]=+k;render()},
-  retry(){Object.assign(S,{run:S.run+1,wells:[[],[],[],[]],block:0,clock:0,spoite:null,done:false,record:[null,null,null,null],inspect:null,lastWell:null,waitUntil:0});go(0)},
+  retry(){Object.assign(S,{run:S.run+1,wells:[[],[],[],[]],block:0,clock:0,spoite:null,done:false,record:[null,null,null,null],inspect:null,lastWell:null,waitUntil:0});go(1)},
   toJudge(){
     if(S.record.includes(null)){S.msg='네 홈의 색을 모두 기록하세요.';return render()}
-    go(2);
+    go(3);
   },
   jp(p){S.jp=p;render()},
   ct(k){S.ct=k;render()},
@@ -559,7 +584,7 @@ const A={
   basis(a){const[p,v]=parts(a);S.basis[p]=v;render()},
   toPcr(){
     if(!S.judge.p1||!S.judge.p2||!S.basis.p1||!S.basis.p2){S.msg='두 사람의 판정과 비교 결과를 고르세요.';return render()}
-    go(3);
+    go(4);
   },
   pcr(k){
     if(+k===S.pcrDone.length){S.pcrDone.push(+k);S.msg=''}
@@ -569,11 +594,11 @@ const A={
   pcrJ(a){const[p,v]=parts(a);S.pcrJudge[p]=v;render()},
   toCompare(){
     if(!S.pcrJudge.p3||!S.pcrJudge.p4){S.msg='검사 순서를 맞추고 30회 증폭한 뒤 사람 3과 4를 판정하세요.';return render()}
-    go(4);
+    go(5);
   },
   qgo(k){S.q=+k;render()},
   qmove(d){S.q=Math.max(0,Math.min(QUESTIONS.length-1,S.q+ +d));render()},
-  finishAll(){S.finished=new Date().toLocaleString('ko-KR');go(6)},
+  finishAll(){S.finished=new Date().toLocaleString('ko-KR');go(7)},
   print(){window.print()},
   copy(){
     const text=`학번 ${S.id} 이름 ${S.name}
@@ -592,7 +617,7 @@ const A={
 function tick(){
   if(!S.waitUntil)return;
   if(Date.now()>=S.waitUntil){S.waitUntil=0;S.block++;S.clock+=5;return render()}
-  if(S.stage===0)render();
+  if(S.stage===1)render();
   setTimeout(tick,500);
 }
 function render(){
