@@ -204,9 +204,10 @@ table.rec td .row{gap:4px;flex-wrap:nowrap}
 .steps4 span{color:var(--muted);font-size:.9rem}
 @media (min-width:960px){.mob-only{display:none!important}main>.landing{flex:1}}
 @media (min-width:960px) and (max-height:760px){main .side .shelf{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}main .side .bottle{padding:8px 4px;gap:6px}}
+@media (max-width:719px) and (min-height:780px){main .landing{gap:32px;padding-top:16px}main .hero-top{gap:14px}main .steps4{gap:12px}main .steps4 article{grid-template-columns:88px 1fr;column-gap:14px;padding:16px 14px}main .steps4 .vis{height:58px}}
 @media (max-width:959px){main .bench.drop{--pw:min(520px,50dvh)}}
 @media (max-width:959px){.steps4{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.steps4 article{border-radius:14px}.steps4 .vis{height:clamp(44px,8dvh,80px);margin-bottom:4px}}
-@media (max-width:719px){.landing{text-align:left;gap:14px}.hero-top{justify-items:start;gap:8px}.landing .note{display:none}.lead{font-size:.9rem}
+@media (max-width:719px){.landing{text-align:left;gap:14px;justify-content:flex-start}.hero-top{justify-items:start;gap:8px}.landing .note{display:none}.lead{font-size:.9rem}
   .steps4{grid-template-columns:1fr;gap:6px}
   .steps4 article{grid-template-columns:72px 1fr;column-gap:12px;row-gap:0;align-items:center;padding:8px 10px}
   .steps4 .vis{grid-row:span 3;height:44px;margin:0;border-radius:10px}
