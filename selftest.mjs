@@ -4,8 +4,8 @@ import assert from 'node:assert/strict';
 
 const html=readFileSync(new URL('./index.html',import.meta.url),'utf8');
 const code=html.match(/<script id="logic">([\s\S]*?)<\/script>/)[1];
-const {evalWell,auditRun,scoreProcess,scoreRecord,scoreConclusion,caseFor,truthOf,SAMPLES,checkDrop,stepDone}=
-  new Function(code+';return{evalWell,auditRun,scoreProcess,scoreRecord,scoreConclusion,caseFor,truthOf,SAMPLES,checkDrop,stepDone}')();
+const {evalWell,auditRun,scoreProcess,scoreRecord,scoreConclusion,caseFor,truthOf,SAMPLES,checkDrop,stepDone,QUIZ}=
+  new Function(code+';return{evalWell,auditRun,scoreProcess,scoreRecord,scoreConclusion,caseFor,truthOf,SAMPLES,checkDrop,stepDone,QUIZ}')();
 
 const T={neg:false,pos:true,p1:true,p2:false};
 const seq=(rs,drops=2)=>rs.flatMap((r,t)=>Array.from({length:drops},()=>({r,t})));
@@ -61,4 +61,8 @@ assert.ok(!stepDone(W0,0));
 assert.ok(stepDone(SAMPLES.map(s=>[{r:s,t:1},{r:s,t:1}]),1));
 // 막힘 없이 차례대로 넣으면 교과서 결과가 나온다
 assert.deepEqual(good.map(w=>evalWell(w,T).level),[0,2,2,0]);
+// 확인 문제: 모두 4지 선다, 정답 번호와 해설이 있고 정답 위치가 한쪽에 몰리지 않는다
+const all=Object.values(QUIZ).flatMap(z=>z.items);
+for(const it of all){assert.equal(it.o.length,4,it.q);assert.ok(it.a>=0&&it.a<4,it.q);assert.ok(it.e&&it.q)}
+assert.ok(new Set(all.map(it=>it.a)).size>=3);
 console.log('ok');
