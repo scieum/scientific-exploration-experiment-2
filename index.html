@@ -251,6 +251,15 @@ table.rec td .row{gap:4px;flex-wrap:nowrap}
 .opts3{grid-template-columns:repeat(3,minmax(0,1fr))}.opts3 .opt{flex-direction:column;justify-content:center;text-align:center;gap:6px;padding:8px 6px;min-height:clamp(64px,10dvh,96px)}
 @media (max-width:719px){.opts3 .opt{font-size:.82rem}.person{padding:12px;gap:8px}.mw i{width:44px}.cmpwells{padding:8px}.stepq{font-size:.92rem}}
 @media (min-width:960px){.judgeview .persons{flex:1;min-height:0;gap:20px}.judgeview .person{justify-content:space-between}}
+.ecard{width:min(860px,100%)}
+.ecard h2 em{font-style:normal;color:var(--accent)}
+.esteps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.esteps li{background:var(--plate);border-radius:14px;padding:10px;display:grid;justify-items:center;gap:4px;text-align:center}
+.esteps svg{width:clamp(48px,9dvh,80px);height:auto}
+.esteps b{font-size:.9rem}.esteps span{font-size:.8rem;color:var(--muted)}
+.ecols{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.ecols h3{font-size:.95rem;margin:0 0 4px}.ecols ul{margin:0;padding-left:1.1em;font-size:.88rem;color:var(--muted);display:grid;gap:2px}
+@media (max-width:719px){.esteps{gap:6px}.esteps li{padding:6px 2px}.esteps svg{width:36px}.esteps b{font-size:.74rem}.esteps span{display:none}.ecols{grid-template-columns:1fr;gap:8px}.ecols ul{font-size:.8rem}.ecard .note{font-size:.8rem}.ecard h2{font-size:1.1rem}}
 .teacher{display:none}
 .res{font-weight:700}
 .res.pos{color:var(--react-text)}
@@ -457,7 +466,7 @@ const DAY_AMOUNT=[.5,2,3.5,5,6.5,7,6.5,5.5],LIM_PROTEIN=4.5,LIM_NA=1.5; // 수�
 
 const fresh=restarts=>({stage:0,id:'',name:'',run:1,wells:[[],[],[],[]],block:0,clock:0,spoite:null,
   drip:null,done:false,levels:[],bounds:[],runErrors:[],record:[null,null,null,null],inspect:null,
-  jp:'p1',ct:'g',q:0,pcrNope:null,lastWell:null,slips:[],nope:null,waitUntil:0,obs:{from:'',to:''},quiz:null,passed:{},qlog:{},judge:{},basis:{},pcrDone:[],pcrWrong:0,pcrPick:null,cycles:0,pcrJudge:{},day:1,answers:['','',''],
+  jp:'p1',ct:'g',q:0,pcrNope:null,lastWell:null,elisa:false,elisaSeen:false,slips:[],nope:null,waitUntil:0,obs:{from:'',to:''},quiz:null,passed:{},qlog:{},judge:{},basis:{},pcrDone:[],pcrWrong:0,pcrPick:null,cycles:0,pcrJudge:{},day:1,answers:['','',''],
   msg:'',confirm:false,restarts,finished:''});
 let S=fresh(0);
 try{const saved=JSON.parse(localStorage.getItem(KEY));if(saved)S=Object.assign(fresh(0),saved)}catch{}
@@ -572,7 +581,7 @@ const views=[
     const smp=SAMPLES.filter(x=>n([x])).map(x=>`${NAMES[x]} ${n([x])}방울`).join('<br>')||'0방울';
     return `<tr><td>${i+1}</td><td class="rc">${n(['cap'])}방울</td><td class="rc">${smp}</td><td class="rc">${n(['det'])}방울</td><td class="rc">${n(['sub'])}방울</td><td class="rcm">${[n(['cap']),n(SAMPLES),n(['det']),n(['sub'])].join(' · ')}</td><td><div class="row" style="justify-content:center">${COLORS.map((c,k)=>toggle('rec',`${i}:${k}`,`<i style="--sw:${['var(--well)','var(--react-pale)','var(--react)'][k]}" class="k${k}"></i><span>${c}</span>`,S.record[i]===k,'sw',`aria-label="홈 ${i+1} ${c}"`)).join('')}</div></td></tr>`}).join('')}</table></div>
   ${msg()}</div>
-  <section class="side">${S.inspect!==null?molecule(S.inspect):'<div class="panel side-ph"><h2>분자 수준으로 보기</h2><p class="note">홈판에서 홈을 누르면 그 홈에서 일어난 결합을 볼 수 있어요.</p></div>'}
+  <section class="side">${S.inspect!==null?molecule(S.inspect):'<div class="panel side-ph"><h2>분자 수준으로 보기</h2>'+btn('elisa','1','🔬 ELISA 다시 보기','small')+'<p class="note">홈판에서 홈을 누르면 그 홈에서 일어난 결합을 볼 수 있어요.</p></div>'}
   ${ctlOk?'':'<p class="note">대조군이 예상과 달라 보이면 다시 실험할 수 있어요. 횟수와 오류는 기록돼요.</p>'}
   <div class="row actbar">${ctlOk?'':btn('retry','','새 홈판으로 다시 실험')}${btn('toJudge','','감염 판정하기','go')}</div></section></div>`},
 
@@ -680,6 +689,22 @@ function report(){
 const parts=s=>s.split(':');
 // 단계의 확인 문제를 아직 다 맞히지 않았으면 문제 창을 띄우고 true를 돌려준다
 function gate(key,cont){if(S.passed[key])return false;S.quiz={key,cont,i:0,pick:null,tried:[],ok:false};S.msg='';render();return true}
+// 단백질 진단을 마친 뒤 한 번 보여 주는 ELISA 설명
+const ELISA_STEPS=[['포획 항체','홈 바닥에 붙어 항원을 기다려요'],['항원','시료 속 병원체의 항원이 붙잡혀요'],['검출 시약','효소가 붙은 항체가 항원에 붙어요'],['진단 반응물','효소가 반응물을 색을 띠는 물질로 바꿔요']];
+function elisaSvg(k){
+  const Y=(x,y,c,flip)=>flip?`<path d="M${x} ${y}v14M${x} ${y+14}l-8 10M${x} ${y+14}l8 10" stroke="${c}" stroke-width="4" fill="none" stroke-linecap="round"/>`:`<path d="M${x} ${y}v-14M${x} ${y-14}l-8 -10M${x} ${y-14}l8 -10" stroke="${c}" stroke-width="4" fill="none" stroke-linecap="round"/>`;
+  return `<svg viewBox="0 0 80 90" aria-hidden="true"><rect y="80" width="80" height="10" rx="3" fill="var(--line)"/>${Y(40,80,'var(--accent)')}${k>=1?'<circle cx="40" cy="48" r="8" fill="var(--good)"/>':''}${k>=2?Y(40,20,'var(--muted)',true)+'<rect x="34" y="8" width="12" height="12" rx="3" fill="var(--enzyme)"/>':''}${k>=3?[[18,10],[62,14],[22,26],[60,30]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="4" fill="var(--react)"/>`).join(''):''}</svg>`;
+}
+function elisaView(){
+  return `<div class="qwrap" role="dialog" aria-modal="true" aria-labelledby="etitle"><div class="qcard ecard">
+  <div class="qtop"><span class="eyebrow">실험 완료</span><span class="note"></span>${btn('elisa','0','✕','small qx','aria-label="닫기"')}</div>
+  <h2 id="etitle">방금 한 실험은 <em>ELISA</em>예요</h2>
+  <p class="note">효소결합면역흡착검사 · <b>E</b>nzyme-<b>L</b>inked <b>I</b>mmuno<b>S</b>orbent <b>A</b>ssay — 효소(E)가 붙은 항체로, 바닥에 붙잡힌(S) 항원을 면역 반응(I)으로 찾는 검사(A)예요.</p>
+  <ol class="esteps">${ELISA_STEPS.map(([t,d],k)=>`<li>${elisaSvg(k)}<b>${'①②③④'[k]} ${t}</b><span>${d}</span></li>`).join('')}</ol>
+  <div class="ecols"><div><h3>실제 검사실에서는</h3><ul><li>홈이 96개인 플레이트로 여러 시료를 한 번에 검사해요.</li><li>방울 대신 마이크로피펫으로 정확한 부피를 넣어요.</li><li>단계 사이마다 씻어서 붙지 않은 물질을 없애요.</li><li>색의 진하기를 기계로 재서 숫자로 판정해요.</li></ul></div>
+  <div><h3>어디에 쓰일까요?</h3><ul><li>감염병의 항원·항체 검사</li><li>호르몬, 알레르기 검사</li><li>신속 항원 검사 키트도 같은 항원–항체 결합 원리를 써요.</li></ul></div></div>
+  <div class="qact">${btn('elisa','0','색 변화 기록하기','go')}</div></div></div>`;
+}
 function quizView(){
   const z=S.quiz,qz=QUIZ[z.key],it=qz.items[z.i],n=qz.items.length,last=z.i===n-1;
   return `<div class="qwrap" role="dialog" aria-modal="true" aria-labelledby="qtitle"><div class="qcard">
@@ -713,7 +738,7 @@ const A={
     if(S.block<4){S.msg=stepDone(S.wells,3)?'진단 반응물이 반응하도록 5분 기다리기를 누른 뒤 마치세요.':'아직 네 가지 시약을 모두 넣지 않았어요.';return render()}
     const t=truth(),res=S.wells.map(w=>evalWell(w,t));
     S.levels=res.map(r=>r.level);S.bounds=res.map(r=>r.bound);
-    S.runErrors.push(auditRun(S.wells));S.done=true;go(2);
+    S.runErrors.push(auditRun(S.wells));S.done=true;S.elisa=!S.elisaSeen;S.elisaSeen=true;go(2);
   },
   inspect(i){S.inspect=i===''?null:+i;render()},
   rec(a){const[i,k]=parts(a);S.record[+i]=+k;render()},
@@ -753,6 +778,7 @@ const A={
     if(z.i<QUIZ[z.key].items.length-1){Object.assign(z,{i:z.i+1,pick:null,tried:[],ok:false});return render()}
     S.passed[z.key]=true;S.quiz=null;A[z.cont]()},
   qclose(){S.quiz=null;render()},
+  elisa(v){S.elisa=v==='1';render()},
   finishAll(){S.finished=new Date().toLocaleString('ko-KR');go(7)},
   print(){window.print()},
   copy(){
@@ -781,7 +807,7 @@ function render(){
   document.getElementById('steps').innerHTML=STAGES.map((s,i)=>`<li class="${i<S.stage?'past':''}" ${i===S.stage?'aria-current="step"':''}>${s}</li>`).join('');
   const r=document.getElementById('restart');
   r.textContent=S.confirm?'입력한 내용을 지우고 처음부터 시작':'처음부터';
-  app.innerHTML=(S.confirm?`<div class="row noprint">${btn('cancel','','계속 진행하기')}<span class="note">처음부터 시작하면 쓴 내용이 지워지고, 다시 시작한 횟수가 결과지에 남아요.</span></div>`:'')+views[S.stage]()+(S.quiz?quizView():'');
+  app.innerHTML=(S.confirm?`<div class="row noprint">${btn('cancel','','계속 진행하기')}<span class="note">처음부터 시작하면 쓴 내용이 지워지고, 다시 시작한 횟수가 결과지에 남아요.</span></div>`:'')+views[S.stage]()+(S.quiz?quizView():S.elisa&&S.stage===2?elisaView():'');
   save();
 }
 
