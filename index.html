@@ -24,7 +24,7 @@
   --accent:#8ea4ff;--accent-ink:#0e1430;--accent-soft:#1f2747;--plate:#21252f;--well:#13161c;--liq:#343c55;--enzyme:#e6b34d;
   --react:#e8357d;--react-pale:#8f4a68;--on-react:#2a0614;--react-text:#f47aa9;--good:#71d29a;--bad:#f39a83;color-scheme:dark}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.65 var(--sans);word-break:keep-all;overflow-wrap:anywhere}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.65 var(--sans);word-break:keep-all;overflow-wrap:break-word}
 .top,main{max-width:1180px;margin:0 auto;padding-inline:max(16px,env(safe-area-inset-left,0px)) max(16px,env(safe-area-inset-right,0px))}
 .top{width:100%;padding-block:10px 6px;display:grid;grid-template-columns:auto 1fr;gap:10px 16px;align-items:center}
 .brand{display:flex;gap:12px;align-items:center}
@@ -72,8 +72,10 @@ td,.num{font-variant-numeric:tabular-nums}
 .flow i{font-style:normal;color:var(--muted);font-size:.8rem}
 .clock{font-family:var(--mono);font-size:1.15rem}
 /* 홈판 */
-.plate{background:var(--plate);border-radius:18px;padding:clamp(10px,2vw,18px);display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;max-width:min(520px,58dvh);width:100%;margin-inline:auto;box-shadow:inset 0 0 0 2px var(--line)}
-.plate.view,.plate.inspect{max-width:min(380px,34dvh)}
+.plate{padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;max-width:var(--pw);width:100%;margin-inline:auto}
+.bench{--pw:min(520px,58dvh);background:var(--plate);border-radius:20px;padding:clamp(10px,2vw,22px);display:flex;flex-direction:column;justify-content:center;gap:8px}
+.bench.view,.bench.inspect{--pw:min(380px,34dvh)}
+.bench.drop .plate{padding-top:clamp(40px,8dvh,84px)}
 .well{position:relative;aspect-ratio:1;max-width:100%;padding:0;min-height:0;border-radius:50%;background:var(--well);border:2px solid var(--line);overflow:hidden;display:block;width:100%}
 .well .liq{position:absolute;inset:calc(50% - var(--r)/2);border-radius:50%;background:var(--liq);transition:inset .25s}
 .well.lv1 .liq{background:var(--react-pale);animation:bloom 1.4s ease-out}
@@ -84,7 +86,7 @@ td,.num{font-variant-numeric:tabular-nums}
 .well.dripped::after{content:"";position:absolute;left:calc(50% - 5px);top:-14px;width:10px;height:14px;border-radius:50% 50% 50% 50%/30% 30% 70% 70%;background:var(--c,var(--accent));animation:drip .35s ease-in forwards}
 @keyframes drip{to{transform:translateY(46px);opacity:0}}
 @keyframes bloom{from{background:var(--liq)}}
-.plabels{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;max-width:min(520px,58dvh);width:100%;margin-inline:auto;font-size:.8rem;text-align:center;color:var(--muted);padding-inline:18px}
+.plabels{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;max-width:var(--pw);width:100%;margin-inline:auto;font-size:.8rem;text-align:center;color:var(--muted);}
 .rack{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(130px,1fr))}
 .chip{min-height:38px;padding:5px 10px;font-size:.9rem}
 .swatch{display:inline-block;width:12px;height:12px;border-radius:50%;border:1px solid var(--line);vertical-align:-1px;margin-right:4px}
@@ -108,15 +110,14 @@ main>.panel{max-width:920px;width:100%;margin-inline:auto}
 @media (max-width:719px){.steps{display:none}}
 @media (min-width:720px){.stepnow{display:none}}
 @media (max-width:959px){.actbar .go{flex:1}}
-@media (min-width:720px){.narrow-only{display:none}}
-.tip{background:var(--accent-soft);border-left:4px solid var(--accent);border-radius:4px 10px 10px 4px;padding:10px 14px;max-width:none}
+@media (min-width:720px){.narrow-only,.tabs.narrow-only{display:none}}
+.tip{background:var(--accent-soft);border-radius:10px;padding:10px 14px;max-width:none}
 .head{display:flex;gap:14px;align-items:center}
 .timer{flex:none;width:56px;height:56px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--accent) calc(var(--p)*360deg),var(--line) 0);font-weight:700}
 .timer span{width:46px;height:46px;border-radius:50%;background:var(--panel);display:grid;place-items:center;font-size:.95rem}
 .flow b{font-weight:500;padding:4px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
 .flow b.now{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 .flow b.done::after{content:" ✓"}
-.plate.drop{padding-top:clamp(40px,8dvh,84px)}
 .wcell{position:relative}
 .well{box-shadow:inset 0 3px 6px rgb(20 24 40/.14)}
 .well[aria-pressed="true"]{background:var(--well);color:var(--ink)}
@@ -126,7 +127,7 @@ main>.panel{max-width:920px;width:100%;margin-inline:auto}
 @keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
 .well.target{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent),inset 0 3px 6px rgb(20 24 40/.14)}
 .dropper{position:absolute;left:50%;bottom:calc(100% - 8px);width:clamp(18px,32%,40px);transform:translateX(-50%);pointer-events:none}
-.pdots{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;max-width:min(520px,58dvh);width:100%;margin-inline:auto;padding-inline:18px}
+.pdots{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;max-width:var(--pw);width:100%;margin-inline:auto}
 .pdots>span{display:flex;flex-wrap:wrap;justify-content:center;gap:2px 6px;font-size:.7rem;color:var(--muted)}
 .pdots i{display:inline-flex;gap:2px;align-items:center;font-style:normal}
 .pdots u{width:clamp(6px,1.6vw,8px);height:clamp(6px,1.6vw,8px);border-radius:50%;border:1.2px solid var(--line)}
@@ -146,7 +147,7 @@ main>.panel{max-width:920px;width:100%;margin-inline:auto}
 .vs>b{color:var(--muted)}
 #chartd svg{max-width:min(560px,70dvh);max-height:38dvh;margin-inline:auto}
 .today{stroke:var(--accent);stroke-width:1.5;opacity:.35}
-.obs input{width:4.5em;display:inline-block;margin-inline:6px;text-align:center}
+.obs input{width:3.2em;height:34px;padding:2px 4px;display:inline-block;margin-inline:6px;text-align:center}
 .persons{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
 .person{display:grid;gap:8px;align-content:start}
 @media (max-width:719px){.persons[data-show="p1"] .person-p2,.persons[data-show="p2"] .person-p1{display:none}}
@@ -154,7 +155,7 @@ main>.panel{max-width:920px;width:100%;margin-inline:auto}
 .charts2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 details.cmp summary{cursor:pointer;font-weight:500;padding:4px 0}
 .sheetclose{display:none}
-@media (min-width:960px){.mid-only{display:none}}
+@media (min-width:960px){.mid-only,.tabs.mid-only{display:none}}
 @media (max-width:959px){.cmpview[data-show="g"] .cmp-o,.cmpview[data-show="o"] .cmp-g{display:none}}
 @media (max-width:959px){.sheet{position:fixed;left:8px;right:8px;bottom:8px;max-height:72dvh;overflow:auto;z-index:5;box-shadow:0 8px 32px rgb(0 0 0/.25)}.sheetclose{display:inline-flex;justify-self:end}.side-ph{display:none}}
 .qnav{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
@@ -163,14 +164,54 @@ details.cmp summary{cursor:pointer;font-weight:500;padding:4px 0}
 .res{font-weight:700}
 .res.pos{color:var(--react-text)}
 .res.neg{color:var(--good)}
+@media (max-width:959px){.desk-only{display:none}
+  .shelf{grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+  .bottle{padding:6px 2px;font-size:.66rem;min-height:0}.bottle svg{width:22px}.bottle[aria-pressed="true"]{transform:translateY(-3px)}
+  .dropbtn{min-height:44px;font-size:.95rem}.bench.drop .plate{padding-top:clamp(32px,6dvh,60px)}}
+@media (max-width:719px){.shelfhead{display:none}}
+/* PC·태블릿 가로: 화면 전체를 채운다 */
+@media (min-width:960px){
+  .top,main{max-width:none;padding-inline:28px}
+  main{display:flex;flex-direction:column;gap:16px;padding-block:16px 20px}
+  main>.split,main>.panel:not(.doc),main>.thinkgrid{flex:1;min-height:0}
+  main>.panel:not(.doc){max-width:none!important;display:flex;flex-direction:column}
+  main>.panel.doc{max-width:920px}
+  .split{grid-template-columns:minmax(0,1fr) 400px;align-items:stretch}
+  .split>.panel{display:flex;flex-direction:column;gap:14px;padding:28px;border-radius:20px;overflow:auto}
+  .side{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:24px;display:flex;flex-direction:column;gap:14px;overflow:auto}
+  .side>.panel{border:0;padding:0;border-radius:0;background:none}
+  .side>.actbar{margin-top:auto}
+  .side>.actbar>button,.split>.panel>.actbar>button{flex:1}
+  .split>.panel>.actbar{margin-top:auto}
+  .side>.note+.actbar,.side>.note:has(+.actbar){margin-top:auto}
+  .side>.note:has(+.actbar)+.actbar{margin-top:0}
+  .split>.panel>.bench{flex:1}
+  .bench.drop{--pw:min(860px,calc((100dvh - 360px)*1.7))}
+  .bench.inspect{--pw:min(560px,calc((100dvh - 520px)*1.6))}
+  .hero{justify-content:center;padding:56px!important}
+  .hero h1{font-size:clamp(1.8rem,3vw,2.6rem)}
+  .formcard{justify-content:center}
+  .persons{flex:1}
+  .person{display:flex;flex-direction:column}
+  .person>label{flex:1;grid-template-rows:auto 1fr}
+  .person textarea{height:100%}
+  main>.panel>.actbar{justify-content:flex-end}
+  .thinkgrid{display:grid;grid-template-columns:240px minmax(0,1fr);gap:20px}
+  .qlist{display:flex;flex-direction:column;gap:8px}
+  .qbox{display:flex;flex-direction:column;padding:28px;border-radius:20px}
+  .qbox>label{flex:1;grid-template-rows:auto 1fr}
+  .qbox textarea{height:100%;min-height:200px}
+  .qnav{justify-content:flex-end}
+  #chartd{flex:1;min-height:0;display:flex;justify-content:center}
+  #chartd svg{height:100%;width:auto;max-width:100%;max-height:none}
+  .cmp-g{gap:12px}
+}
 /* 휴대폰: 한 화면에 들어오도록 줄인다 */
 @media (max-width:719px){
   .legend,.wide-only,.shelf-title{display:none}
   .flow{gap:3px}.flow i{display:none}.flow b{padding:2px 6px;font-size:.74rem}
   .timer{width:44px;height:44px}.timer span{width:36px;height:36px;font-size:.78rem}
   .pdots>span{gap:1px 3px}.pdots i{gap:1px}.pdots u{width:5px;height:5px;border-width:1px}
-  .shelf{grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
-  .bottle{padding:6px 2px;font-size:.66rem;min-height:0}.bottle svg{width:22px}.bottle[aria-pressed="true"]{transform:translateY(-3px)}
   .pill{font-size:.8rem;padding:4px 10px}
   .vs>div{padding:6px}.vs .res{font-size:1.1rem}
   #chartd svg{max-height:30dvh}
@@ -311,12 +352,12 @@ function plate(mode){
   }).join('');
   const dots=drop?`<div class="pdots">${S.wells.map((w,i)=>`<span role="img" aria-label="홈 ${i+1}: ${GROUPS.map(([rs,n])=>n+' '+w.filter(a=>rs.includes(a.r)).length+'방울').join(', ')}">${GROUPS.map(([rs,,c])=>{const n=w.filter(a=>rs.includes(a.r)).length;return `<i style="--c:${c}"><u class="${n>0?'on':''}"></u><u class="${n>1?'on':''}"></u>${n>2?'+'+(n-2):''}</i>`}).join('')}</span>`).join('')}</div>
   <p class="legend">${GROUPS.map(([,n,c])=>`<span><span class="swatch" style="background:${c}"></span>${n}</span>`).join('')}</p>`:'';
-  return `<div class="plate${drop?' drop':''}${mode!=='drop'?' '+mode:''}" role="group" aria-label="홈판">${wells}</div>
-  <div class="plabels"${mode!=='drop'?' style="max-width:min(380px,34dvh)"':''}><span>음성 표준</span><span>양성 표준</span><span>사람 1</span><span>사람 2</span></div>${dots}`;
+  return `<div class="bench ${mode}"><div class="plate" role="group" aria-label="홈판">${wells}</div>
+  <div class="plabels"><span>음성 표준</span><span>양성 표준</span><span>사람 1</span><span>사람 2</span></div>${dots}</div>`;
 }
 const todo=()=>S.block>3?'④까지 모두 넣었어요. <b>실험을 마치고 색 관찰하기</b>를 누르세요.'
   :stepDone(S.wells,S.block)?`모든 홈에 ${STEP_OBJ[S.block]} 넣었어요. <b>5분 기다리기</b>를 누르세요.`
-  :`${S.block===1?'홈마다 아래에 적힌 <b>시료</b>를':`모든 홈에 <b>${STEP_OBJ[S.block]}</b>`} 2방울씩 넣어요. 시약병 집기 → 홈 고르기 → <b>한 방울 떨어뜨리기</b>`;
+  :`${S.block===1?'홈마다 아래에 적힌 <b>시료</b>를':`모든 홈에 <b>${STEP_OBJ[S.block]}</b>`} 2방울씩 넣어요.<span class="desk-only"> 시약병 집기 → 홈 고르기 → <b>한 방울 떨어뜨리기</b></span>`;
 const flow=step=>`<div class="flow">${['포획 항체','진단 시료','검출 시약','진단 반응물'].map((t,k)=>`<b class="${k<step?'done':k===step?'now':''}">${'①②③④'[k]} ${t}</b>`).join('<i>5분 뒤</i>')}</div>`;
 
 function molecule(i){
@@ -359,11 +400,11 @@ function dayChart(day){
 }
 
 const views=[
-()=>`<div class="split"><section class="panel"><h1>두 사람은 감염되었을까요?</h1>
+()=>`<div class="split"><section class="panel hero"><h1>두 사람은 감염되었을까요?</h1>
   <p>진단 검사실에 발열과 기침 증상이 있는 사람 1, 2의 시료가 도착했어요. 항원–항체 반응으로 감염 여부를 판정하고, 핵산 증폭 검사와 비교해 두 기술의 차이를 찾아보세요.</p>
   <p class="wide-only">✓ 시약을 직접 넣어 사람 1, 2 진단하기<br>✓ 대조군과 비교해 판정하기<br>✓ 핵산 진단과 장단점 비교하기</p>
   <p class="note">실제 시약과 병원체를 쓰지 않는 모의 실험이에요.</p></section>
-  <section class="panel"><h2>실험자 정보</h2>
+  <section class="panel formcard"><h2>실험자 정보</h2>
   <label>학번 (모둠 활동이면 모둠 번호)<input id="f-id" data-bind="id" value="${esc(S.id)}" autocomplete="off"></label>
   <label>이름<input id="f-name" data-bind="name" value="${esc(S.name)}" autocomplete="off"></label>
   <p class="note">학번마다 환자의 결과가 달라요. 쓴 내용은 이 기기에 자동으로 저장되고 평가 자료로 쓰여요.</p>
@@ -378,14 +419,17 @@ const views=[
   <p class="pill" aria-live="polite"><small>집은 스포이트</small>${S.spoite?esc(NAMES[S.spoite])+(S.lastWell!==null?` · 홈 ${S.lastWell+1}에 ${held}/2방울`:' · 넣을 홈을 고르세요'):'시약병을 눌러 집으세요'}</p></div>
   <div class="shelf" role="group" aria-label="시약 선반">${Object.keys(NAMES).map(k=>toggle('spoite',k,bottleSvg(RC[k])+'<span>'+SHORT[k]+'</span>',S.spoite===k,'bottle',`aria-label="${NAMES[k]}"`)).join('')}</div>
   ${btn('drop','',`💧 ${S.lastWell!==null?`홈 ${S.lastWell+1}에 `:''}한 방울 떨어뜨리기`,'go dropbtn')}</div>
-  <div class="row actbar">${btn('wait','','5분 기다리기')}${btn('finish','','실험을 마치고 색 관찰하기','go')}</div></section></div>`},
+  <p class="note desk-only">한 단계를 모든 홈에 넣은 뒤 5분 기다리기를 눌러요.</p>
+  <div class="row actbar">${btn('wait','','5분 기다리기')}${btn('finish','','실험 마치고 색 관찰')}</div></section></div>`},
 
 ()=>{const ctlOk=S.levels[0]===0&&S.levels[1]===2;return `<div class="split"><div class="panel"><h1>색 변화 기록</h1>
   <p class="note">${S.run}번째 실험 결과예요. 홈을 누르면 분자 수준으로 볼 수 있어요.</p>
   ${plate('inspect')}
   <div class="tw"><table><tr><th class="l">홈 (시료)</th><th>관찰한 색</th></tr>${SAMPLES.map((s,i)=>`<tr><td class="l"><b>${i+1}</b> <span class="note">${SHORT[s]}</span></td><td><div class="row" style="justify-content:center">${COLORS.map((c,k)=>toggle('rec',`${i}:${k}`,c,S.record[i]===k,'chip')).join('')}</div></td></tr>`).join('')}</table></div>
-  ${msg()}<div class="row">${btn('toJudge','','감염 판정하기','go')}${ctlOk?'':`${btn('retry','','새 홈판으로 다시 실험')}<span class="note">대조군이 예상과 달라 보이면 다시 실험할 수 있어요. 횟수와 오류는 기록돼요.</span>`}</div></div>
-  ${S.inspect!==null?molecule(S.inspect):'<div class="panel side-ph"><h2>분자 수준으로 보기</h2><p class="note">홈판에서 홈을 누르면 그 홈에서 일어난 결합을 볼 수 있어요.</p></div>'}</div>`},
+  ${msg()}</div>
+  <section class="side">${S.inspect!==null?molecule(S.inspect):'<div class="panel side-ph"><h2>분자 수준으로 보기</h2><p class="note">홈판에서 홈을 누르면 그 홈에서 일어난 결합을 볼 수 있어요.</p></div>'}
+  ${ctlOk?'':'<p class="note">대조군이 예상과 달라 보이면 다시 실험할 수 있어요. 횟수와 오류는 기록돼요.</p>'}
+  <div class="row actbar">${ctlOk?'':btn('retry','','새 홈판으로 다시 실험')}${btn('toJudge','','감염 판정하기','go')}</div></section></div>`},
 
 ()=>`<div class="panel" style="max-width:1180px"><h1>대조군과 비교해 판정하기</h1>${plate('view')}
   <div class="tabs narrow-only">${[['p1','사람 1'],['p2','사람 2']].map(([p,n])=>toggle('jp',p,n+(S.judge[p]&&S.basis[p]?' ✓':''),S.jp===p)).join('')}</div>
@@ -396,7 +440,7 @@ const views=[
   ${msg()}<div class="row actbar">${btn('toPcr','','핵산 진단으로','go')}</div></div>`,
 
 ()=>{const c=caseFor(S.id),orderDone=S.pcrDone.length===5,cyc=orderDone;return `<div class="split"><section class="panel"><h1>핵산을 이용한 진단</h1>
-  ${orderDone?`<details><summary>검사 순서 완료 ✓ <span class="note">펼쳐 보기</span></summary>${S.pcrDone.map((k,i)=>`<span class="card-done">${i+1}. ${PCR_STEPS[k]}</span>`).join('')}</details>`:`<h2>검사 순서대로 카드를 누르세요</h2>${S.pcrDone.map((k,i)=>`<span class="card-done">${i+1}. ${PCR_STEPS[k]}</span>`).join('')}`}
+  ${orderDone?`<details ${matchMedia('(min-width:960px)').matches?'open':''}><summary>검사 순서 완료 ✓ <span class="note">펼쳐 보기</span></summary>${S.pcrDone.map((k,i)=>`<span class="card-done">${i+1}. ${PCR_STEPS[k]}</span>`).join('')}</details>`:`<h2>검사 순서대로 카드를 누르세요</h2>${S.pcrDone.map((k,i)=>`<span class="card-done">${i+1}. ${PCR_STEPS[k]}</span>`).join('')}`}
   ${orderDone?'':`<div class="row">${PCR_SHOW.filter(k=>!S.pcrDone.includes(k)).map(k=>btn('pcr',k,PCR_STEPS[k],'chip')).join('')}</div>`}
   ${orderDone?'':msg()}</section>
   <section class="panel${orderDone?'':' wide-only'}">${cyc?`<h2>사람 3과 4의 핵산을 증폭하세요</h2>
@@ -422,10 +466,10 @@ const views=[
   <label>그렇게 생각한 까닭<textarea data-bind="obs.why" placeholder="병원체의 양과 검출 한계를 이용해 써 보세요.">${esc(S.obs.why)}</textarea></label></div>
   <div class="row actbar">${btn('go','6','생각해 보기','go')}</div></section></div>`,
 
-()=>{const i=S.q,last=i===QUESTIONS.length-1;return `<div class="panel qbox"><h1>생각해 보기 <span class="note">${i+1} / ${QUESTIONS.length}</span></h1>
+()=>{const i=S.q,last=i===QUESTIONS.length-1;return `<div class="thinkgrid"><nav class="qlist desk-only" aria-label="문항">${QUESTIONS.map((_,k)=>toggle('qgo',k,`문항 ${k+1}${S.answers[k].trim()?' ✓':''}`,k===i)).join('')}<p class="note">자동 저장돼요</p></nav><div class="panel qbox"><h1>생각해 보기 <span class="note">${i+1} / ${QUESTIONS.length}</span></h1>
   <label>${i+1}. ${esc(QUESTIONS[i])}<textarea id="ans-${i}" data-bind="answers.${i}">${esc(S.answers[i])}</textarea></label>
   ${msg()}<div class="qnav">${i?btn('qmove','-1','이전 질문'):''}${last?btn('finishAll','','제출할 결과지 만들기','go'):btn('qmove','1','다음 질문','go')}
-  ${last?'<span class="note">결과지를 만들면 답을 고칠 수 없어요.</span>':''}</div></div>`},
+  ${last?'<span class="note">결과지를 만들면 답을 고칠 수 없어요.</span>':''}</div></div></div>`},
 
 ()=>report(),
 ];
@@ -444,7 +488,7 @@ function report(){
   const sp=scoreProcess(errs.length+S.slips.length),sr=scoreRecord(S.record,S.levels),sc=scoreConclusion(S.judge,S.basis,S.levels);
   const ctlOk=S.levels[0]===0&&S.levels[1]===2;
   const list=a=>a.length?`<ul>${a.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:'없음';
-  return `<div class="panel" id="report"><h1>감염병 진단 기술 체험 보고서</h1>
+  return `<div class="panel doc" id="report"><h1>감염병 진단 기술 체험 보고서</h1>
   <p>${esc(S.id)} ${esc(S.name)} · ${esc(S.finished)}</p>
   <p class="note">[10과탐2-02-01] 단백질과 핵산을 이용한 감염병 진단 기술 체험 실험 후 보고서 작성하기</p>
   <h2>실험 수행 기록</h2>
@@ -519,6 +563,7 @@ const A={
     if(!S.pcrJudge.p3||!S.pcrJudge.p4){S.msg='검사 순서를 맞추고 30회 증폭한 뒤 사람 3과 4를 판정하세요.';return render()}
     go(5);
   },
+  qgo(k){S.q=+k;render()},
   qmove(d){S.q=Math.max(0,Math.min(QUESTIONS.length-1,S.q+ +d));render()},
   finishAll(){S.finished=new Date().toLocaleString('ko-KR');go(7)},
   print(){window.print()},
