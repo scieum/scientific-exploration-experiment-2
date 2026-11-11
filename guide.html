@@ -4,13 +4,19 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>수행평가 안내</title>
+<meta name="description" content="감염병 신속진단키트의 원리 탐구 실험 수행평가를 안내하는 수업용 슬라이드">
+<script>document.documentElement.classList.add('js')</script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <style>
+/* Hallmark · checked: 2026-11-11 · genre: editorial (inferred)
+ * floor: 0 FAIL · fixed: 7a, 10a, 30a, 34, 41, 48, 54, 62, 63, 67, 38iii, 24b, 26b · structural: 3 printed (9, 77, 85)
+ * built: the project · redesign: polish · v2.0.0 */
+/* Hallmark · waive 38iii · h1 .sub is a second line at 60px under the 76px title · 원리 탐구 실험 is the cover title's own second line */
 /* 색·글꼴·홈 모양은 index.html(시뮬레이션)과 같은 토큰을 쓴다. 학생이 같은 실험임을 바로 알아보게. */
 :root{
   --bg:#f4f5f8;--panel:#ffffff;--ink:#191c24;--muted:#5b6170;--line:#dde1e8;
   --accent:#3a5ce4;--accent-ink:#ffffff;--accent-soft:#eef2fe;--plate:#eef1f8;--well:#ffffff;--liq:#dce3f5;--enzyme:#d99a1c;
-  --react:#c2185b;--react-pale:#f0a6c3;--on-react:#ffffff;--good:#1c6b3f;
+  --react:#c2185b;--react-pale:#f0a6c3;--on-react:#ffffff;--good:#1c6b3f;--qr-bg:#f7f8fc;
   --sans:"Pretendard Variable",Pretendard,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
 }
 :root[data-theme="dark"]{
@@ -19,34 +25,43 @@
   --react:#e8357d;--react-pale:#8f4a68;--on-react:#2a0614;--good:#71d29a;color-scheme:dark}
 *{box-sizing:border-box}
 html,body{height:100%;margin:0}
-body{background:var(--bg);color:var(--ink);font:400 30px/1.55 var(--sans);word-break:keep-all;overflow:hidden;display:grid;place-items:center}
+html,body{overflow:clip}
+body{background:var(--bg);color:var(--ink);font:400 30px/1.55 var(--sans);word-break:keep-all;display:grid;place-items:center}
 /* 1600×900 무대를 화면에 맞춰 통째로 확대·축소 */
 #stage{width:1600px;height:900px;position:relative;flex:none;transform:scale(var(--s,1))}
-.slide{position:absolute;inset:0;padding:70px 96px 90px;display:flex;flex-direction:column;gap:30px;opacity:0;visibility:hidden;transform:translateX(40px);transition:opacity .5s,transform .5s,visibility .5s}
-.slide.active{opacity:1;visibility:visible;transform:none}
-.slide.past{transform:translateX(-40px)}
+.slide{position:absolute;inset:0;padding:72px 96px 88px;display:flex;flex-direction:column;gap:32px;transition:opacity .5s,transform .5s,visibility .5s}
+.js .slide{opacity:0;visibility:hidden;transform:translateX(40px)}
+.js .slide.active{opacity:1;visibility:visible;transform:none}
+.js .slide.past{transform:translateX(-40px)}
+/* 스크립트가 꺼지면 슬라이드를 위에서 아래로 차례로 펼쳐 보인다 */
+html:not(.js),html:not(.js) body{overflow:auto;height:auto;display:block}
+html:not(.js) #stage{height:auto;transform:none;margin:0 auto}
+html:not(.js) .slide{position:relative;height:900px}
+html:not(.js) #hud,html:not(.js) #bar{display:none}
 h1,h2,h3,p{margin:0}
 h1{font-size:76px;line-height:1.2;letter-spacing:-.02em}
 h2{font-size:54px;line-height:1.25;letter-spacing:-.01em}
-h2 em,h1 em{font-style:normal;color:var(--accent)}
+h1 .sub{display:block;font-size:60px;color:var(--accent)}
+h1,h2{text-wrap:balance;overflow-wrap:break-word;min-width:0}
 h3{font-size:32px}
-.eyebrow{align-self:flex-start;background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:6px 22px;font-weight:700;font-size:24px}
+.eyebrow{align-self:flex-start;background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:8px 24px;font-weight:700;font-size:24px}
 .muted{color:var(--muted)}
 .pts{color:var(--accent);font-weight:700}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:24px;padding:28px 32px}
+.card{background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:24px;padding:28px 32px}
 .grid{display:grid;gap:24px}
 .g2{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(3,minmax(0,1fr))}.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
 .fill{flex:1;min-height:0}
 /* 하나씩 나타나기 (PPT 애니메이션) */
-.f{opacity:0;transform:translateY(24px);transition:opacity .5s,transform .5s}
-.f.in{opacity:1;transform:none}
+.f{transition:opacity .5s,transform .5s}
+.js .f{opacity:0;transform:translateY(24px)}
+.js .f.in{opacity:1;transform:none}
 /* 슬라이드에 들어올 때 차례로 떠오르기 */
 .slide.active .rise{animation:rise .7s both;animation-delay:calc(var(--d,0)*.12s + .15s)}
 @keyframes rise{from{opacity:0;transform:translateY(30px)}}
 /* 홈판 */
-.plate{background:var(--plate);border-radius:36px;padding:70px 40px 40px;display:grid;grid-template-columns:repeat(4,1fr);gap:32px}
+.plate{background:var(--plate);border-radius:36px;padding:72px 40px 40px;display:grid;grid-template-columns:repeat(4,1fr);gap:32px}
 .well{position:relative;aspect-ratio:1;border-radius:50%;background:var(--well);border:3px solid var(--line);display:grid;place-items:center}
-.well .liq{position:absolute;inset:16%;border-radius:50%;background:var(--liq)}
+.well .liq{position:absolute;inset:16%;border-radius:50%;background:var(--liq);display:grid;place-items:center}
 .well b{position:relative;font-size:36px}
 .well::before{content:"";position:absolute;left:calc(50% - 10px);top:-60px;width:20px;height:28px;border-radius:50% 50% 50% 50%/30% 30% 70% 70%;background:var(--accent);opacity:0}
 .slide.active .well::before{animation:drip .6s ease-in both;animation-delay:calc(var(--i)*.45s + .4s)}
@@ -58,83 +73,87 @@ h3{font-size:32px}
 .well .q{position:relative;font-size:52px;font-weight:800;color:var(--muted)}
 .plabels{display:grid;grid-template-columns:repeat(4,1fr);gap:32px;padding:0 40px;text-align:center;font-size:24px;color:var(--muted)}
 /* ELISA */
-.acro{display:flex;gap:18px}
-.acro div{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:14px 10px;text-align:center}
+.acro{display:flex;gap:20px}
+.acro div{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:16px 12px;text-align:center}
 .acro b{display:block;font-size:56px;line-height:1.1;color:var(--accent)}
 .acro span{font-size:22px;color:var(--muted)}
 .acro i{font-style:normal;display:block;font-size:26px;font-weight:700}
 .esteps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
-.esteps li{background:var(--plate);border-radius:24px;padding:22px 16px;display:grid;justify-items:center;gap:6px;text-align:center}
+.esteps li{background:var(--plate);border-radius:24px;padding:24px 16px;display:grid;align-content:start;justify-items:center;gap:8px;text-align:center}
 .esteps svg{width:110px;height:auto}
 .esteps b{font-size:28px}.esteps span{font-size:22px;color:var(--muted)}
 /* 흐름 카드 */
 .vis{height:150px;background:var(--plate);border-radius:18px;display:grid;place-items:center;margin-bottom:12px}
 .vis svg{height:80%;width:auto;max-width:90%}
-.step small{color:var(--accent);font-weight:700;font-size:20px;letter-spacing:.06em;display:block}
+.step small{color:var(--accent);font-weight:700;font-size:22px;display:block}
 .step b{font-size:32px;display:block}.step span{display:block;font-size:24px;line-height:1.45;color:var(--muted)}
 .tall .vis{height:250px}
 .arrow{font-size:40px;color:var(--accent);align-self:center;text-align:center}
 /* 배점 막대 */
-.bars{display:grid;gap:26px}
+.bars{display:grid;gap:28px}
 .bar{display:grid;grid-template-columns:330px 1fr 120px;align-items:center;gap:24px}
 .bar .t{font-size:32px;font-weight:700}
 .bar .t small{display:block;font-size:22px;font-weight:400;color:var(--muted)}
 .bar .track{height:46px;border-radius:12px;background:var(--plate);overflow:hidden}
-.bar .track i{display:block;height:100%;width:var(--w);border-radius:12px;background:var(--accent)}
+.bar .track i{display:block;height:100%;width:var(--w);border-radius:12px;background:var(--accent);transform-origin:left}
 .slide.active .bar .track i{animation:grow 1.1s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--d)*.2s + .3s)}
-@keyframes grow{from{width:0}}
+@keyframes grow{from{transform:scaleX(0)}}
 .bar .n{font-size:40px;font-weight:800;text-align:right;font-variant-numeric:tabular-nums}
-.total{display:flex;justify-content:flex-end;align-items:baseline;gap:16px;font-size:30px;border-top:2px solid var(--line);padding-top:18px}
+.total{display:flex;justify-content:flex-end;align-items:baseline;gap:16px;font-size:30px;border-top:2px solid var(--line);padding-top:20px}
 .total b{font-size:64px;color:var(--accent);font-variant-numeric:tabular-nums}
 /* 문항 목록 */
-.qs{list-style:none;margin:0;padding:0;display:grid;gap:10px;font-size:25px}
-.qs li{display:flex;gap:14px}
+.qs{list-style:none;margin:0;padding:0;display:grid;gap:12px;font-size:25px}
+.qs li{display:flex;gap:16px}
 .qs li b{flex:none;width:44px;height:44px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-size:22px}
-.tag{font-size:22px;font-weight:700;color:var(--accent);margin-bottom:14px;display:block}
+.tag{font-size:22px;font-weight:700;color:var(--accent);margin-bottom:16px;display:block}
 /* 표 */
-table{border-collapse:collapse;width:100%;font-size:26px}
-th,td{border:2px solid var(--line);padding:12px 18px;text-align:center}
+table{border-collapse:collapse;width:100%;font-size:26px;font-variant-numeric:tabular-nums}
+th,td{border-bottom:2px solid var(--line);padding:12px 20px;text-align:center}
 th{background:var(--plate);font-weight:600}
-td.blank{color:var(--muted);font-style:italic}
-.tip{background:var(--accent-soft);border-radius:20px;padding:18px 26px;font-size:25px}
+td.blank{color:var(--muted)}
+table{background:var(--plate);border-radius:24px;overflow:clip}
+tr:last-child td{border-bottom:0}
+.tip{background:var(--accent-soft);border-radius:20px;padding:20px 28px;font-size:25px}
 .tip b{color:var(--accent)}
 /* 대조군 비교 */
-.cmp{display:grid;grid-template-columns:1fr 1.2fr 1fr;align-items:center;gap:30px;text-align:center}
-.cmp .well{width:180px;margin:0 auto 14px}
+.cmp{display:grid;grid-template-columns:1fr 1.2fr 1fr;align-items:center;gap:32px;text-align:center}
+.cmp .well{width:180px;margin:0 auto 16px}
 .cmp .well::before{display:none}
 .cmp .mid .well{width:220px;border-style:dashed;border-color:var(--accent)}
 .vs{font-size:28px;font-weight:700;color:var(--accent)}
 .slide.active .pulse{animation:pulse 1.8s ease-in-out infinite 1s}
 @keyframes pulse{50%{transform:scale(1.06)}}
 /* 핵심어 칩 */
-.chain{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
-.chip{border:2px solid var(--accent);border-radius:999px;padding:4px 18px;font-size:24px;font-weight:600}
+.chain{display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+.chip{border:2px solid var(--accent);border-radius:999px;padding:4px 20px;font-size:24px;font-weight:600}
 .chain i{font-style:normal;color:var(--muted)}
-.chain .chip{opacity:.25;transition:opacity .4s,background .4s,color .4s}
+.chain .chip{opacity:.5;transition:opacity .4s,background .4s,color .4s}
 .chain.f.in .chip{opacity:1;background:var(--accent);color:var(--accent-ink)}
 .chain.f.in .chip:nth-of-type(2){transition-delay:.3s}.chain.f.in .chip:nth-of-type(3){transition-delay:.6s}.chain.f.in .chip:nth-of-type(4){transition-delay:.9s}
-.num{display:inline-grid;place-items:center;width:52px;height:52px;border-radius:50%;background:var(--accent);color:var(--accent-ink);font-weight:800;font-size:28px;margin-bottom:12px}
+.num{font-variant-numeric:tabular-nums;display:inline-grid;place-items:center;width:52px;height:52px;border-radius:50%;background:var(--accent);color:var(--accent-ink);font-weight:800;font-size:28px;margin-bottom:12px}
 .card p{font-size:31px;line-height:1.5}
-.think .chip{font-size:27px;padding:6px 20px}.think .chain{margin-top:30px!important;gap:14px}
+.think .chip{font-size:27px;padding:8px 20px}.think .chain{margin-top:32px!important;gap:16px}
 /* 체크리스트 */
-.check{list-style:none;margin:0;padding:0;display:grid;gap:22px}
-.check li{display:flex;gap:22px;align-items:center;font-size:32px}
+.check{list-style:none;margin:0;padding:0;display:grid;gap:24px}
+.check li{display:flex;gap:24px;align-items:center;font-size:32px}
 .check li::before{content:"✓";flex:none;width:56px;height:56px;border-radius:16px;background:var(--plate);color:transparent;display:grid;place-items:center;font-weight:800;transition:background .4s .2s,color .4s .2s}
-.check li.in::before{background:var(--good);color:var(--bg)}
+.check li.in::before{background:var(--accent-soft);color:var(--accent)}
 .check small{display:block;font-size:23px;color:var(--muted)}
 /* 시작 */
-.qr{width:330px;height:330px;padding:22px;background:#fff;border-radius:28px;image-rendering:pixelated;display:block}
+.qr{width:330px;height:330px;padding:24px;background:var(--qr-bg);border-radius:28px;image-rendering:pixelated;display:block}
 .slide.active .qrpop{animation:pop .8s cubic-bezier(.2,1.4,.4,1) both .3s}
 @keyframes pop{from{opacity:0;transform:scale(.6)}}
-.todo{list-style:none;margin:0;padding:0;display:grid;gap:18px;counter-reset:t}
-.todo li{counter-increment:t;display:flex;gap:18px;align-items:center;font-size:32px}
+.todo{list-style:none;margin:0;padding:0;display:grid;gap:20px;counter-reset:t}
+.todo li{counter-increment:t;display:flex;gap:20px;align-items:center;font-size:32px}
 .todo li::before{content:counter(t);flex:none;width:52px;height:52px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-weight:800}
-.due{background:var(--react);color:var(--on-react);border-radius:20px;padding:18px 26px;font-size:30px;font-weight:700}
+.due{background:var(--accent-soft);color:var(--ink);border:2px solid var(--accent);border-radius:20px;padding:20px 28px;font-size:30px;font-weight:700}
 /* 하단 진행 막대 */
-#bar{position:fixed;left:0;bottom:0;height:6px;background:var(--accent);transition:width .4s}
+#bar{position:fixed;left:0;bottom:0;width:100%;height:6px;background:var(--accent);transform-origin:left;transition:transform .4s}
 #hud{position:fixed;right:18px;bottom:16px;display:flex;gap:8px;align-items:center;font:500 15px var(--sans);color:var(--muted)}
-#hud button{font:inherit;color:inherit;background:var(--panel);border:1px solid var(--line);border-radius:8px;min-width:40px;min-height:40px;cursor:pointer}
+#hud button{display:grid;place-items:center;font:inherit;color:inherit;background:var(--panel);border:1px solid var(--line);border-radius:8px;min-width:40px;min-height:40px;cursor:pointer}
 #hud button:hover{border-color:var(--accent)}
+#hud button:active{transform:translateY(1px);background:var(--plate)}
+#hud button:disabled{opacity:.4;cursor:default}
 :focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
@@ -145,35 +164,33 @@ td.blank{color:var(--muted);font-style:italic}
 <!-- 1 표지 -->
 <section class="slide" aria-label="표지">
   <span class="eyebrow rise">2026학년도 1학년 2학기 · 과학탐구실험2 수행평가</span>
-  <h1 class="rise" style="--d:1">감염병 신속진단키트의<br><em>원리 탐구 실험</em></h1>
+  <h1 class="rise" style="--d:1">감염병 신속진단키트의<span class="sub">원리 탐구 실험</span></h1>
   <p class="muted rise" style="--d:2">시료 한 방울로 감염을 알아내는 방법, 직접 실험하며 찾아봐요</p>
   <div class="fill"></div>
   <div class="plate rise" style="--d:3;width:900px;padding-top:60px;padding-bottom:36px">
-    <div class="well" style="--i:0"><div class="liq"></div><b>1</b></div>
-    <div class="well pos" style="--i:1"><div class="liq"></div><b>2</b></div>
-    <div class="well" style="--i:2"><div class="liq"></div><b>3</b></div>
-    <div class="well" style="--i:3"><div class="liq"></div><b>4</b></div>
+    <div class="well" style="--i:0"><div class="liq"><b>1</b></div></div>
+    <div class="well pos" style="--i:1"><div class="liq"><b>2</b></div></div>
+    <div class="well" style="--i:2"><div class="liq"><b>3</b></div></div>
+    <div class="well" style="--i:3"><div class="liq"><b>4</b></div></div>
   </div>
 </section>
 
 <!-- 2 실험 목적 -->
 <section class="slide" aria-label="실험 목적">
-  <span class="eyebrow">1. 실험 목적</span>
-  <h2>자가진단키트는 <em>어떻게</em> 감염을 알아낼까?</h2>
-  <div class="grid fill tall" style="grid-template-columns:1fr 60px 1fr 60px 1fr;align-items:center">
+  <h2>자가진단키트는 어떻게 감염을 알아낼까?</h2>
+  <div class="grid fill tall" style="grid-template-columns:1fr 60px 1fr 60px 1fr;align-items:stretch">
     <div class="card rise step" style="--d:1"><div class="vis"><svg viewBox="0 0 160 70" aria-hidden="true"><rect x="20" y="20" width="120" height="30" rx="10" fill="var(--panel)" stroke="var(--line)" stroke-width="2"/><circle cx="45" cy="35" r="7" fill="var(--liq)"/><rect x="82" y="26" width="4" height="18" rx="2" fill="var(--react)"/><rect x="100" y="26" width="4" height="18" rx="2" fill="var(--react)"/><text x="84" y="64" font-size="10" fill="var(--muted)">C</text><text x="102" y="64" font-size="10" fill="var(--muted)">T</text></svg></div><small>보던 것</small><b>신속진단키트</b><span>줄이 나타나면 양성, 그 원리는?</span></div>
     <div class="arrow rise" style="--d:2">→</div>
     <div class="card rise step" style="--d:3"><div class="vis"><svg viewBox="0 0 160 70" aria-hidden="true"><rect x="2" y="14" width="156" height="54" rx="14" fill="var(--panel)"/><circle cx="28" cy="41" r="13" fill="var(--liq)" stroke="var(--line)" stroke-width="2"/><circle cx="63" cy="41" r="13" fill="var(--react)" stroke="var(--line)" stroke-width="2"/><circle cx="98" cy="41" r="13" fill="var(--liq)" stroke="var(--line)" stroke-width="2"/><circle cx="133" cy="41" r="13" fill="var(--liq)" stroke="var(--line)" stroke-width="2"/><rect x="94" y="0" width="8" height="18" rx="3" fill="var(--accent)"/></svg></div><small>실험으로</small><b>원리 체험</b><span>시약을 차례로 넣고 색 변화를 관찰해요</span></div>
     <div class="arrow rise" style="--d:4">→</div>
     <div class="card rise step" style="--d:5"><div class="vis"><svg viewBox="0 0 160 70" aria-hidden="true"><circle cx="80" cy="35" r="26" fill="none" stroke="var(--accent)" stroke-width="5"/><path d="M68 35l9 9 17-19" stroke="var(--accent)" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div><small>설명하기</small><b>감염병 확인에 활용</b><span>진단 기술을 언제, 어떻게 쓰는지 말할 수 있어요</span></div>
   </div>
-  <p class="tip rise" style="--d:6">감염병 신속진단키트(자가진단키트)의 원리를 실험을 통해 체험하고, 이 진단 기술이 감염병 확인에 어떻게 활용되는지 <b>설명할 수 있다.</b></p>
+  <p class="tip rise" style="--d:6"><b>실험 목적</b> 감염병 신속진단키트의 원리를 실험을 통해 체험하고, 이 진단 기술이 감염병 확인에 어떻게 활용되는지 <b>설명할 수 있다.</b></p>
 </section>
 
 <!-- 3 ELISA -->
 <section class="slide" aria-label="ELISA란">
-  <span class="eyebrow">오늘 실험의 원리</span>
-  <h2><em>ELISA</em> 효소결합면역흡착검사</h2>
+  <h2>ELISA 효소결합면역흡착검사</h2>
   <div class="acro">
     <div class="rise" style="--d:1"><b>E</b><i>효소</i><span>Enzyme</span></div>
     <div class="rise" style="--d:2"><b>L</b><i>결합</i><span>Linked</span></div>
@@ -187,16 +204,14 @@ td.blank{color:var(--muted);font-style:italic}
 
 <!-- 4 오늘의 흐름 -->
 <section class="slide" aria-label="오늘의 흐름">
-  <span class="eyebrow">오늘 수업의 흐름</span>
-  <h2>시뮬레이션 <em>4단계</em>를 따라가요</h2>
+  <h2>시뮬레이션 4단계를 따라가요</h2>
   <div class="grid g4 fill" id="flow"></div>
   <p class="tip rise" style="--d:5">잘못 넣으면 ✕와 경고가 떠요. 단계마다 나오는 <b>확인 문제</b>가 곧 활동지 <b>2. 탐구 수행</b>이에요.</p>
 </section>
 
 <!-- 5 배점 -->
 <section class="slide" aria-label="평가 구성">
-  <span class="eyebrow">수행평가 구성</span>
-  <h2>활동지 4개 영역, <em>100점</em></h2>
+  <h2>활동지 4개 영역, 100점</h2>
   <div class="bars fill" style="align-content:center">
     <div class="bar"><span class="t">2. 탐구 수행<small>시뮬레이션 문제 정리</small></span><span class="track"><i style="--w:100%;--d:0"></i></span><span class="n">30</span></div>
     <div class="bar"><span class="t">3. 실험 결과<small>관찰된 색 변화 기록</small></span><span class="track"><i style="--w:66.7%;--d:1"></i></span><span class="n">20</span></div>
@@ -209,7 +224,7 @@ td.blank{color:var(--muted);font-style:italic}
 <!-- 6 탐구 수행 -->
 <section class="slide" aria-label="탐구 수행">
   <span class="eyebrow">2. 탐구 수행 <span class="pts">30점</span></span>
-  <h2>시뮬레이션에서 풀었던 <em>문제 11개</em>를 정리해요</h2>
+  <h2>시뮬레이션에서 풀었던 문제 11개를 정리해요</h2>
   <div class="grid g3 fill">
     <div class="card f"><span class="tag">단백질 진단의 원리</span><ol class="qs">
       <li><b>1</b>포획 항체의 역할은?</li><li><b>2</b>진단 시료를 넣으면 홈 안에서 일어나는 일은?</li><li><b>3</b>검출 시약의 역할은?</li><li><b>4</b>진단 반응물을 넣으면 색이 변하는 까닭은?</li></ol></div>
@@ -224,16 +239,16 @@ td.blank{color:var(--muted);font-style:italic}
 <!-- 7 실험 결과 -->
 <section class="slide" aria-label="실험 결과">
   <span class="eyebrow">3. 실험 결과 <span class="pts">20점</span></span>
-  <h2>홈 4개의 <em>관찰된 색 변화</em>를 표에 써요</h2>
+  <h2>홈 4개의 관찰된 색 변화를 표에 써요</h2>
   <div class="grid fill" style="grid-template-columns:1fr 1.15fr;align-items:center;gap:48px">
-    <div style="display:grid;gap:14px">
-      <div class="plate" style="gap:22px;padding:60px 26px 26px">
-        <div class="well" style="--i:0"><div class="liq"></div><b>1</b></div>
-        <div class="well pos" style="--i:1"><div class="liq"></div><b>2</b></div>
+    <div style="display:grid;gap:16px">
+      <div class="plate" style="gap:24px;padding:60px 28px 28px">
+        <div class="well" style="--i:0"><div class="liq"><b>1</b></div></div>
+        <div class="well pos" style="--i:1"><div class="liq"><b>2</b></div></div>
         <div class="well" style="--i:2"><div class="liq"></div><span class="q">?</span></div>
         <div class="well" style="--i:3"><div class="liq"></div><span class="q">?</span></div>
       </div>
-      <div class="plabels" style="gap:22px;padding:0 26px;font-size:20px"><span>음성 표준</span><span>양성 표준</span><span>사람 1</span><span>사람 2</span></div>
+      <div class="plabels" style="gap:24px;padding:0 28px;font-size:20px"><span>음성 표준</span><span>양성 표준</span><span>사람 1</span><span>사람 2</span></div>
     </div>
     <table>
       <tr><th>홈</th><th>표준/시료 구성</th><th>관찰된 색 변화</th></tr>
@@ -249,11 +264,11 @@ td.blank{color:var(--muted);font-style:italic}
 <!-- 8 결론 -->
 <section class="slide" aria-label="결론">
   <span class="eyebrow">4. 결론 <span class="pts">20점</span></span>
-  <h2>누가 감염되었을까? 근거는 <em>대조군</em>에서</h2>
+  <h2>누가 감염되었을까? 근거는 대조군에서</h2>
   <div class="cmp fill">
-    <div class="rise" style="--d:1"><div class="well"><div class="liq"></div><b>1</b></div><h3>음성 대조군</h3><p class="muted">병원체가 없을 때의 색</p></div>
+    <div class="rise" style="--d:1"><div class="well"><div class="liq"><b>1</b></div></div><h3>음성 대조군</h3><p class="muted">병원체가 없을 때의 색</p></div>
     <div class="mid rise" style="--d:2"><div class="well pulse"><div class="liq"></div><span class="q">?</span></div><h3>사람의 시료</h3><p class="vs">← 어느 쪽과 같은가? →</p></div>
-    <div class="rise" style="--d:3"><div class="well pos"><div class="liq"></div><b>2</b></div><h3>양성 대조군</h3><p class="muted">병원체가 있을 때의 색</p></div>
+    <div class="rise" style="--d:3"><div class="well pos"><div class="liq"><b>2</b></div></div><h3>양성 대조군</h3><p class="muted">병원체가 있을 때의 색</p></div>
   </div>
   <div class="grid g2">
     <p class="tip f"><b>1)</b> 사람 1과 사람 2 중 감염병에 걸린 사람은?</p>
@@ -264,22 +279,21 @@ td.blank{color:var(--muted);font-style:italic}
 <!-- 9 생각해 보기 -->
 <section class="slide" aria-label="생각해 보기">
   <span class="eyebrow">5. 생각해 보기 <span class="pts">30점</span></span>
-  <h2>서술형 <em>3문항</em>, 이 낱말을 넣어 설명해요</h2>
+  <h2>서술형 3문항, 이 낱말을 넣어 설명해요</h2>
   <div class="grid g3 fill think">
-    <div class="card f"><span class="num">1</span><p>홈1(음성 표준)과 홈2(양성 표준)를 사람의 시료와 <b>함께</b> 실험해야 하는 까닭</p><div class="chain f" style="margin-top:22px"><span class="chip">음성 대조군</span><span class="chip">양성 대조군</span><span class="chip">비교</span></div></div>
-    <div class="card f"><span class="num">2</span><p>병원체가 있을 때만 색이 변하는 까닭을 <b>순서대로</b></p><div class="chain f" style="margin-top:22px"><span class="chip">포획 항체</span><i>→</i><span class="chip">항원</span><i>→</i><span class="chip">검출 시약</span><i>→</i><span class="chip">진단 반응물</span></div></div>
-    <div class="card f"><span class="num">3</span><p>단백질 진단 vs 핵산 진단의 장단점, 그리고 <b>감염 초기</b> 환자에게 알맞은 기술과 근거</p><div class="chain f" style="margin-top:22px"><span class="chip">장점</span><span class="chip">단점</span><span class="chip">감염 초기</span><span class="chip">근거</span></div></div>
+    <div class="card f"><span class="num">1</span><p>홈1(음성 표준)과 홈2(양성 표준)를 사람의 시료와 <b>함께</b> 실험해야 하는 까닭</p><div class="chain f" style="margin-top:24px"><span class="chip">음성 대조군</span><span class="chip">양성 대조군</span><span class="chip">비교</span></div></div>
+    <div class="card f"><span class="num">2</span><p>병원체가 있을 때만 색이 변하는 까닭을 <b>순서대로</b></p><div class="chain f" style="margin-top:24px"><span class="chip">포획 항체</span><i>→</i><span class="chip">항원</span><i>→</i><span class="chip">검출 시약</span><i>→</i><span class="chip">진단 반응물</span></div></div>
+    <div class="card f"><span class="num">3</span><p>단백질 진단 vs 핵산 진단의 장단점, 그리고 <b>감염 초기</b> 환자에게 알맞은 기술과 근거</p><div class="chain f" style="margin-top:24px"><span class="chip">장점</span><span class="chip">단점</span><span class="chip">감염 초기</span><span class="chip">근거</span></div></div>
   </div>
 </section>
 
 <!-- 10 작성 팁 -->
 <section class="slide" aria-label="이렇게 쓰면 좋아요">
-  <span class="eyebrow">작성 팁</span>
-  <h2>이렇게 쓰면 <em>좋아요</em></h2>
+  <h2>이렇게 쓰면 좋아요</h2>
   <ul class="check fill" style="align-content:center">
     <li class="f"><div>과학 용어로 써요<small>“그거, 약” 대신 포획 항체, 항원, 검출 시약, 진단 반응물</small></div></li>
     <li class="f"><div>일어나는 순서대로 써요<small>무엇이 무엇과 결합하고, 그다음 어떤 일이 생기는지</small></div></li>
-    <li class="f"><div>근거는 대조군과 비교해서 써요<small>“붉어서 양성”보다 “양성 대조군처럼 붉게 변해서 양성”</small></div></li>
+    <li class="f"><div>근거는 대조군과 비교해서 써요<small>“색이 변해서 양성”보다 “양성 대조군과 같은 색으로 변해서 양성”</small></div></li>
     <li class="f"><div>관찰과 해석을 나눠서 써요<small>본 것(색 변화)과 그 뜻(감염 여부)을 구분하기</small></div></li>
     <li class="f"><div>완성된 문장으로 써요<small>낱말만 나열하지 않기</small></div></li>
   </ul>
@@ -287,25 +301,23 @@ td.blank{color:var(--muted);font-style:italic}
 
 <!-- 11 시작 -->
 <section class="slide" aria-label="시작해요">
-  <span class="eyebrow">시작해요</span>
-  <h2>QR로 접속해 <em>실험을 시작</em>하세요</h2>
+  <h2>QR로 접속해 실험을 시작하세요</h2>
   <div class="grid fill" style="grid-template-columns:auto 1fr;gap:80px;align-items:center">
     <div class="qrpop" style="text-align:center"><img class="qr" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEEAAABBCAIAAAABlV4SAAAQAElEQVR4AdzadbBdRRIG8NxAsODuENjFNfhiQYIT3N1dFxLcnWVxhyokCYu7WwIs7u5x9002nuz+ku9w6tz7eFv7b7jVNdUz0yPd0/31zHmv5X9m/F/LFjP+r9ChU6dOW2+9dbvmf3qPOuqoBn1PPfXU9u3bjxs3rnfv3pttttnll19O4K677tp0002/+uorfAPdcsstxLbaaquddtpp5MiR6X399dfJP/roo6mabe+997Zcc3vZYost9F5zzTWRVxY6vPXWW+bq3vxP78svv2zA5MmTx4wZM2nSJHy3bt1ee+21iRMnjh079u233/7000912f0777zTp0+ff0//2RPJ0I8//kjsjTfeeP755wcOHJiuQYMGke/Vq1dkzP/ss89arrm9WFTvRx99FHllocOss86q8tlnn5n6X/U/a/z8889zzjlnZJ566qlFF130jjvuID/TTDMpbXXFFVc0qEOHDostttgiiywyYMAAAn+a/tt5553JhK6++ur+/fu3bdtWle132WUXzP777z9q1KgzzjgDH5p55pnbtGlDcvDgwaYtiZiZKUAsm8GgQgccWnbZZe3Apqu04IILLr/88i1bTot+MrPNNhuZOeaYA7/qqquuttpqrVq1chSGTJgwQddSSy1FSa7CHKhfv34kLf/ll18SoyQdVllllaFDhzqWr7/++rvvvrPX77//3gEyB7tAGXOSnGeeeUxbkiFmNr8Jq1Sng/FM/uf633vvvVcdwJV/+eWXI444QuMDDzxg4YUWWujbb7816N133zX8kEMO0cW7lChex3/WXHPNW2+9Vcvdd9/9ySeftG7dmv+svvrq9DF25ZVXXmONNbTHOtQg+eSTT+oqiTBf1d5AdTroy2BMc2Thrl27dunSpXPnzphHHnmEB1Oe/A8//PDQQw+xK3733Xc/4IADDjzwwG222YbkTz/9tO+++6699tq6EDMfeeSRO+64I37JJZckucIKK+D/NzW3t0YdarVaw0S1Wl2LyLakzR100EGYffbZhwPwYKPef/99zh2EOeecc2z9wQcfPP3000mKNOptv/32xBCdb7jhBseI32ijjUgmNphDS0m1Wt3SRpVdVaZRh2pf+AbtgeO1116r1HvsscfaitPnu9dddx0FNM4+++zK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" alt="시뮬레이션 접속 QR 코드"><p class="muted" style="margin-top:12px;font-size:24px">시뮬레이션 접속 QR</p></div>
-    <div style="display:grid;gap:30px">
+    <div style="display:grid;gap:32px">
       <ol class="todo">
         <li class="rise" style="--d:2">QR로 시뮬레이션에 접속해요</li>
         <li class="rise" style="--d:3">실험하며 확인 문제를 풀어요</li>
         <li class="rise" style="--d:4">활동지 2~5번을 작성해요</li>
-        <li class="rise" style="--d:5">수업이 끝나기 전에 제출해요</li>
       </ol>
-      <p class="due rise" style="--d:6">📌 활동지는 오늘 수업 시간 안에 바로 제출해요</p>
+      <p class="due rise" style="--d:6">활동지는 오늘 수업 시간 안에 바로 제출해요</p>
     </div>
   </div>
 </section>
 
 </div>
 <div id="bar"></div>
-<div id="hud"><button id="prev" aria-label="이전">←</button><span id="pg"></span><button id="next" aria-label="다음">→</button><button id="theme" aria-label="밝기 바꾸기">◐</button><button id="fs" aria-label="전체 화면">⛶</button></div>
+<div id="hud"><button id="prev" aria-label="이전"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span id="pg"></span><button id="next" aria-label="다음"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button id="theme" aria-label="밝기 바꾸기">◐</button><button id="fs" aria-label="전체 화면">⛶</button></div>
 <script>
 // index.html의 elisaSvg와 같은 그림 (k단계까지 쌓인 모습)
 function elisaSvg(k){
@@ -319,7 +331,7 @@ const LAND_VIS=[
   `<svg viewBox="0 0 160 70" aria-hidden="true"><circle cx="40" cy="35" r="20" fill="var(--react)"/><text x="80" y="42" text-anchor="middle" font-size="22" fill="var(--muted)">=</text><circle cx="120" cy="35" r="20" fill="var(--react)"/><circle cx="138" cy="17" r="11" fill="var(--accent)"/><path d="M133 17l4 4 7-8" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>`,
   `<svg viewBox="0 0 160 70" aria-hidden="true"><path d="M14 60H150M14 60V8" stroke="var(--line)" stroke-width="2" fill="none"/><path d="M16 58C70 58 100 56 118 44S140 16 148 8" stroke="var(--accent)" stroke-width="3.5" fill="none" stroke-linecap="round"/><path d="M16 58H148" stroke="var(--muted)" stroke-width="2" stroke-dasharray="4 4"/></svg>`,
   `<svg viewBox="0 0 160 70" aria-hidden="true"><rect x="50" y="4" width="60" height="64" rx="8" fill="var(--panel)" stroke="var(--line)" stroke-width="2"/>${[18,28,38,48].map((y,i)=>`<rect x="60" y="${y}" width="${i%2?28:40}" height="5" rx="2.5" fill="var(--line)"/>`).join('')}<circle cx="106" cy="54" r="12" fill="var(--accent)"/><path d="M100 54l4 4 8-9" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>`];
-document.getElementById('flow').innerHTML=[['단백질 진단','홈판에 시약 4가지를 차례로 넣어요'],['판정하기','대조군과 색을 비교해 판정해요'],['핵산 진단','핵산을 증폭해 두 검사를 비교해요'],['정리하기','확인 문제를 다시 보고 활동지를 써요']].map(([t,d],i)=>`<article class="card step rise" style="--d:${i+1}"><div class="vis">${LAND_VIS[i]}</div><small>STEP ${i+1}</small><b>${t}</b><span>${d}</span></article>`).join('');
+document.getElementById('flow').innerHTML=[['단백질 진단','홈판에 시약 4가지를 차례로 넣어요'],['판정하기','대조군과 색을 비교해 판정해요'],['핵산 진단','핵산을 증폭해 두 검사를 비교해요'],['정리하기','확인 문제를 다시 보고 활동지를 써요']].map(([t,d],i)=>`<article class="card step rise" style="--d:${i+1}"><div class="vis">${LAND_VIS[i]}</div><small>${i+1}단계</small><b>${t}</b><span>${d}</span></article>`).join('');
 
 const slides=[...document.querySelectorAll('.slide')],stage=document.getElementById('stage');
 let cur=0;
@@ -332,7 +344,7 @@ function show(n,all){
   frags(slides[n]).forEach(f=>f.classList.toggle('in',!!all));
   cur=n;history.replaceState(null,'','#'+(n+1));
   document.getElementById('pg').textContent=`${n+1} / ${slides.length}`;
-  document.getElementById('bar').style.width=`${(n+1)/slides.length*100}%`;
+  document.getElementById('bar').style.transform=`scaleX(${(n+1)/slides.length})`;
 }
 function next(){const f=frags(slides[cur]).find(f=>!f.classList.contains('in'));f?f.classList.add('in'):show(cur+1)}
 function prev(){const f=frags(slides[cur]).filter(f=>f.classList.contains('in')).pop();f?f.classList.remove('in'):cur>0&&show(cur-1,true)}
