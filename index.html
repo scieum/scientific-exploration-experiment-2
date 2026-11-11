@@ -28,7 +28,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.65 var(--san
 .top,main{max-width:1180px;margin:0 auto;padding-inline:max(16px,env(safe-area-inset-left,0px)) max(16px,env(safe-area-inset-right,0px))}
 .top{width:100%;padding-block:10px 6px;display:grid;grid-template-columns:auto 1fr;gap:10px 16px;align-items:center}
 .brand{display:flex;gap:12px;align-items:center}
-.bars{grid-column:1/-1;display:grid;grid-template-columns:repeat(8,1fr);gap:4px}
+.bars{grid-column:1/-1;display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px} /* 단계 수가 바뀌어도 한 줄 */
 .bars i{height:4px;border-radius:2px;background:var(--line)}
 .bars i.on{background:var(--accent)}
 .stepnow{justify-self:end;font-size:.88rem;color:var(--muted)}
@@ -197,6 +197,11 @@ table.rec td .row{gap:4px;flex-wrap:nowrap}
 .landing h1 em{font-style:normal;color:var(--accent)}
 .lead{color:var(--muted);font-size:clamp(.95rem,1.4vw,1.12rem);max-width:56ch}
 .cta .big{min-height:56px;padding:0 36px;font-size:1.1rem;border-radius:14px}
+.cta{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+/* 수행평가 안내 슬라이드로 가는 보조 버튼 */
+a.guide{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 18px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);text-decoration:none;font-weight:500}
+a.guide:hover{border-color:var(--accent)}
+.cta a.guide{min-height:56px;padding:0 28px;border-radius:14px;font-size:1.05rem}
 .steps4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;max-width:1120px;width:100%;margin:0 auto;text-align:left}
 .steps4 article{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:clamp(12px,2dvh,20px);display:grid;gap:4px;align-content:start}
 .steps4 .vis{height:clamp(40px,10dvh,120px);background:var(--plate);border-radius:14px;display:grid;place-items:center;margin-bottom:8px}
@@ -581,11 +586,11 @@ const views=[
     <span class="eyebrow">감염병 진단 모의 실험</span>
     <h1>두 사람은 감염되었을까요?<br><em>시약을 직접 넣어 진단해 보세요</em></h1>
     <p class="lead">발열과 기침 증상이 있는 사람 1, 2의 시료가 검사실에 도착했어요. 단백질 진단으로 감염 여부를 판정하고, 핵산 진단과 비교해 두 기술의 차이를 찾아보세요.</p>
-    <div class="cta desk-only">${btn('go','1','실험 시작하기 →','go big')}</div>
+    <div class="cta desk-only">${btn('go','1','실험 시작하기 →','go big')}<a class="guide" href="guide.html">수행평가 안내 보기</a></div>
     <p class="note">실제 시약을 쓰지 않는 모의 실험이에요 · 잘못 넣으면 ✕와 경고가 떠요 · 5분 기다리기는 10초예요</p>
   </div>
   <div class="steps4">${[['단백질 진단','홈판에 시약 4가지를 차례로 넣어요'],['판정하기','대조군과 색을 비교해 판정해요'],['핵산 진단','핵산을 증폭해 두 검사를 비교해요'],['정리하기','질문에 답하고 결과지를 제출해요']].map(([t,d],i)=>`<article><div class="vis">${LAND_VIS[i]}</div><small>STEP ${i+1}</small><b>${t}</b><span>${d}</span></article>`).join('')}</div>
-  <div class="row actbar mob-only">${btn('go','1','실험 시작하기','go go-m')}</div>
+  <div class="row actbar mob-only"><a class="guide" href="guide.html">수행평가 안내</a>${btn('go','1','실험 시작하기','go go-m')}</div>
 </section>`,
 ()=>{const held=S.spoite&&S.lastWell!==null?S.wells[S.lastWell].filter(a=>a.r===S.spoite).length:0;return `<div class="split"><section class="panel">
   <div class="head"><div class="timer" style="--p:${Math.min((S.clock+5*waitFrac())/20,1)}"><span class="num">${Math.floor(S.clock+5*waitFrac())}분</span></div><h1>단백질을 이용한 진단</h1></div>${flow(Math.min(S.block,3))}
